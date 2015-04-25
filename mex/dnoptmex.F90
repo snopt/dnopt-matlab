@@ -8,9 +8,8 @@
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-subroutine mexFunction ( nlhs, plhs, nrhs, prhs )
+subroutine mexFunction( nlhs, plhs, nrhs, prhs )
   use mxdnWork
-
   implicit none
 
   integer*4  :: nlhs, nrhs
@@ -52,7 +51,7 @@ subroutine mexFunction ( nlhs, plhs, nrhs, prhs )
 
 
   ! Get option.
-  if ( nrhs < 1 ) call mexErrMsgTxt ( 'Need an option input argument' )
+  if ( nrhs < 1 ) call mexErrMsgTxt( 'Need an option input argument' )
   rOpt = mxGetScalar(prhs(1))
   iOpt = rOpt
 
@@ -60,52 +59,52 @@ subroutine mexFunction ( nlhs, plhs, nrhs, prhs )
   ! Files
   if ( iOpt == dnOpenP ) then
 
-     if ( nrhs /= 2 ) call mexErrMsgTxt ( 'Wrong number of input arguments' )
+     if ( nrhs /= 2 ) call mexErrMsgTxt( 'Wrong number of input arguments' )
 
      info = mxIsChar(prhs(2))
-     if ( info /= 1 ) call mexErrMsgTxt ( 'Need filename string' )
+     if ( info /= 1 ) call mexErrMsgTxt( 'Need filename string' )
 
      strlen = mxGetN(prhs(2))
-     if ( strlen > 80 ) call mexErrMsgTxt ( 'Print filename is too long' )
+     if ( strlen > 80 ) call mexErrMsgTxt( 'Print filename is too long' )
 
      if ( strlen > 0 ) then
-        call mxGetString ( prhs(2), filename, strlen )
+        call mxGetString( prhs(2), filename, strlen )
      else
-        call mexErrMsgTxt ( 'Empty print filename' )
+        call mexErrMsgTxt( 'Empty print filename' )
      end if
 
-     if ( printOpen ) close ( iPrint )
+     if ( printOpen ) close( iPrint )
 
      open ( iPrint, file=filename, status='unknown' )
      printOpen = .true.
 
   else if ( iOpt == dnOpenS ) then
 
-     if ( nrhs /= 2 ) call mexErrMsgTxt ( 'Wrong number of input arguments' )
+     if ( nrhs /= 2 ) call mexErrMsgTxt( 'Wrong number of input arguments' )
 
      info = mxIsChar(prhs(2))
-     if ( info /= 1 ) call mexErrMsgTxt ( 'Need filename string' )
+     if ( info /= 1 ) call mexErrMsgTxt( 'Need filename string' )
 
      strlen = mxGetN(prhs(2))
-     if ( strlen > 80 ) call mexErrMsgTxt ( 'Summary filename is too long' )
+     if ( strlen > 80 ) call mexErrMsgTxt( 'Summary filename is too long' )
 
      if ( strlen > 0 ) then
-        call mxGetString ( prhs(2), filename, strlen )
+        call mxGetString( prhs(2), filename, strlen )
      else
-        call mexErrMsgTxt ( 'Empty summary filename' )
+        call mexErrMsgTxt( 'Empty summary filename' )
      end if
 
-     if ( summOpen ) close ( iSumm )
+     if ( summOpen ) close( iSumm )
 
      open ( iSumm, file=filename, status='unknown' )
      summOpen = .true.
 
   else if ( iOpt == dnClosP ) then
-     if ( printOpen ) close ( iPrint )
+     if ( printOpen ) close( iPrint )
      printOpen = .false.
 
   else if ( iOpt == dnClosS ) then
-     if ( summOpen ) close ( iSumm )
+     if ( summOpen ) close( iSumm )
      summOpen = .false.
 
   else if ( iOpt == dnscrnOn ) then
@@ -115,26 +114,26 @@ subroutine mexFunction ( nlhs, plhs, nrhs, prhs )
      screenOn = .false.
 
   else if ( iOpt == dnEnd ) then
-     if ( printOpen ) close ( iPrint )
+     if ( printOpen ) close( iPrint )
      printOpen = .false.
 
-     if ( summOpen ) close ( iSumm )
+     if ( summOpen ) close( iSumm )
      summOpen  = .false.
      firstCall = .true.
 
-     if ( allocated(cw) ) deallocate ( cw )
-     if ( allocated(iw) ) deallocate ( iw )
-     if ( allocated(rw) ) deallocate ( rw )
+     if ( allocated(cw) ) deallocate( cw )
+     if ( allocated(iw) ) deallocate( iw )
+     if ( allocated(rw) ) deallocate( rw )
 
   else
 
      if ( firstCall ) then
-        if ( allocated(cw) ) deallocate ( cw )
-        if ( allocated(iw) ) deallocate ( iw )
-        if ( allocated(rw) ) deallocate ( rw )
-        allocate ( cw(lencw), iw(leniw), rw(lenrw) )
+        if ( allocated(cw) ) deallocate( cw )
+        if ( allocated(iw) ) deallocate( iw )
+        if ( allocated(rw) ) deallocate( rw )
+        allocate( cw(lencw), iw(leniw), rw(lenrw) )
 
-        call dnBegin ( iPrint, iSumm, cw, lencw, iw, leniw, rw, lenrw )
+        call dnBegin( iPrint, iSumm, cw, lencw, iw, leniw, rw, lenrw )
 
         firstCall = .false.
      end if
@@ -143,7 +142,7 @@ subroutine mexFunction ( nlhs, plhs, nrhs, prhs )
      if      ( iOpt == dnSolve ) then
 
         callType = userCall
-        call dnmxSolve ( nlhs, plhs, nrhs, prhs )
+        call dnmxSolve( nlhs, plhs, nrhs, prhs )
         callType = systemCall
 
      else if ( iOpt == dnSetX .or. &
@@ -155,19 +154,19 @@ subroutine mexFunction ( nlhs, plhs, nrhs, prhs )
                iOpt == dnGetR ) then
 
         callType = userCall
-        call dnmxOptions ( iOpt, nlhs, plhs, nrhs, prhs )
+        call dnmxOptions( iOpt, nlhs, plhs, nrhs, prhs )
         callType = systemCall
 
      else if ( iOpt == dnSpecs ) then
 
         callType = userCall
-        call dnmxSpecs ( nlhs, plhs, nrhs, prhs )
+        call dnmxSpecs( nlhs, plhs, nrhs, prhs )
         callType = systemCall
 
      else if ( iOpt == dnSolveN ) then
 
         callType = userCall
-        call dnmxSolveN ( nlhs, plhs, nrhs, prhs )
+        call dnmxSolveN( nlhs, plhs, nrhs, prhs )
         callType = systemCall
 
      end if
@@ -179,9 +178,8 @@ end subroutine mexFunction
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
+subroutine dnmxSolve( nlhs, plhs, nrhs, prhs )
   use mxdnWork
-
   implicit none
   integer*4  :: nlhs, nrhs
   mwPointer  :: prhs(*), plhs(*)
@@ -239,15 +237,15 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
   ! Check number of input and output arguments.
   if ( nrhs /= 5 .and. nrhs /= 7 .and. nrhs /= 9 .and. &
        nrhs /= 12 .and. nrhs /= 13  ) &
-       call mexErrMsgTxt ( 'Wrong number of input arguments' )
+       call mexErrMsgTxt( 'Wrong number of input arguments' )
 
 
   !-----------------------------------------------------------------------------
   ! Objective function
   !-----------------------------------------------------------------------------
   info = mxIsClass( prhs(2), 'function_handle')
-  if ( info /= 1 ) call mexErrMsgTxt ( 'Wrong input type for obj' )
-  objHandle = mxDuplicateArray ( prhs(2) )
+  if ( info /= 1 ) call mexErrMsgTxt( 'Wrong input type for obj' )
+  objHandle = mxDuplicateArray( prhs(2) )
 
 
   !-----------------------------------------------------------------------------
@@ -261,14 +259,14 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
   ! Get number of linear inequality constraint Ax <= b
   nlin = mxGetM(prhs(4))
 
-  if ( nlin > 0 ) call checkCol ( prhs(4), n, 'A' )
+  if ( nlin > 0 ) call checkCol( prhs(4), n, 'A' )
 
 
   ! Get number of linear equality constraints Aeq x = beq
   if ( nrhs > 5 ) then
      nleq = mxGetM(prhs(6))
 
-     if ( nleq > 0 ) call checkCol ( prhs(6), n, 'Aeq' )
+     if ( nleq > 0 ) call checkCol( prhs(6), n, 'Aeq' )
 
   else
      nleq = 0
@@ -283,26 +281,26 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
   !-----------------------------------------------------------------------------
   if ( nlCon > 0 ) then
      ldA = nlCon
-     allocate ( A(ldA,n) )
+     allocate( A(ldA,n) )
 
      if ( nlin > 0 ) &
-          call mxCopyPtrToReal8 ( mxGetPr(prhs(4)), A(1:nlin,1:n), nlin*n )
+          call mxCopyPtrToReal8( mxGetPr(prhs(4)), A(1:nlin,1:n), nlin*n )
 
      if ( nleq > 0  ) &
-          call mxCopyPtrToReal8 ( mxGetPr(prhs(6)), A(nlin+1:nlCon,1:n), nleq*n )
+          call mxCopyPtrToReal8( mxGetPr(prhs(6)), A(nlin+1:nlCon,1:n), nleq*n )
   else
      ldA = 1
-     allocate ( A(ldA,n) )
+     allocate( A(ldA,n) )
   end if
 
   !-----------------------------------------------------------------------------
   ! Get the number of nonlinear constraints
   !-----------------------------------------------------------------------------
   if ( nrhs > 9 ) then
-     info = mxIsClass ( prhs(10), 'function_handle' )
-     if ( info /= 1 ) call mexErrMsgTxt ( 'Wrong input type for nonlcon' )
+     info = mxIsClass( prhs(10), 'function_handle' )
+     if ( info /= 1 ) call mexErrMsgTxt( 'Wrong input type for nonlcon' )
 
-     conHandle = mxDuplicateArray ( prhs(10) )
+     conHandle = mxDuplicateArray( prhs(10) )
 
 
      ! Compute the number of nonlinear constraints nnCon,
@@ -326,21 +324,21 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
   if ( nnCon > 0 ) then
 
      ldJ = nnCon
-     allocate ( Jcon(ldJ,n) )
+     allocate( Jcon(ldJ,n) )
 
      if ( nnin > 0 ) then
-        call checkCol ( prhs(11), n, 'J' )
-        call mxCopyPtrToReal8 ( mxGetPr(prhs(11)), Jcon(1:nnin,1:n), nnin*n )
+        call checkCol( prhs(11), n, 'J' )
+        call mxCopyPtrToReal8( mxGetPr(prhs(11)), Jcon(1:nnin,1:n), nnin*n )
      end if
 
      if ( nneq > 0 ) then
-        call checkCol ( prhs(12), n, 'Jeq' )
-        call mxCopyPtrToReal8 ( mxGetPr(prhs(12)), Jcon(nnin+1:nnCon,1:n), nneq*n )
+        call checkCol( prhs(12), n, 'Jeq' )
+        call mxCopyPtrToReal8( mxGetPr(prhs(12)), Jcon(nnin+1:nnCon,1:n), nneq*n )
      end if
 
   else
      ldJ = 1
-     allocate ( Jcon(1,1) )
+     allocate( Jcon(1,1) )
   end if
 
 
@@ -348,12 +346,12 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
   ! Allocate space for DNOPT
   !-----------------------------------------------------------------------------
   m     = nlCon + nnCon   ! total number of constraints
-  allocate ( bl(n+m), bu(n+m), x(n+m), y(n+m) )
+  allocate( bl(n+m), bu(n+m), x(n+m), y(n+m) )
 
   ! Get initial x
   x = 0.0
   y = 0.0
-  call mxCopyPtrToReal8 ( mxGetPr(prhs(3)), x(1:n), n )
+  call mxCopyPtrToReal8( mxGetPr(prhs(3)), x(1:n), n )
 
 
   !-----------------------------------------------------------------------------
@@ -366,18 +364,18 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
      tmp = mxGetM(prhs(8))
 
      if ( tmp > 0 ) then
-        call checkRow ( prhs(8), n, 'lb' )
-        call checkCol ( prhs(8), 1, 'lb' )
-        call mxCopyPtrToReal8 ( mxGetPr(prhs(8)), bl(1:n), n )
+        call checkRow( prhs(8), n, 'lb' )
+        call checkCol( prhs(8), 1, 'lb' )
+        call mxCopyPtrToReal8( mxGetPr(prhs(8)), bl(1:n), n )
      else
         bl(1:n) = -infBnd
      end if
 
      tmp = mxGetM(prhs(9))
      if ( tmp > 0 ) then
-        call checkRow ( prhs(9), n, 'ub' )
-        call checkCol ( prhs(9), 1, 'ub' )
-        call mxCopyPtrToReal8 ( mxGetPr(prhs(9)), bu(1:n), n )
+        call checkRow( prhs(9), n, 'ub' )
+        call checkCol( prhs(9), 1, 'ub' )
+        call mxCopyPtrToReal8( mxGetPr(prhs(9)), bu(1:n), n )
      else
         bu(1:n) = infBnd
      end if
@@ -411,9 +409,9 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
   ! Check dimension of b
   tmp = mxGetM(prhs(5))
   if ( tmp > 0 ) then
-     call checkRow ( prhs(5), nlin, 'b' )
-     call checkCol ( prhs(5), 1,    'b' )
-     call mxCopyPtrToReal8 ( mxGetPr(prhs(5)), bu(i1:i2), nlin )
+     call checkRow( prhs(5), nlin, 'b' )
+     call checkCol( prhs(5), 1,    'b' )
+     call mxCopyPtrToReal8( mxGetPr(prhs(5)), bu(i1:i2), nlin )
   else
      bu(i1:i2) = infBnd
   end if
@@ -428,11 +426,11 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
 
      tmp = mxGetM(prhs(7))
      if ( tmp > 0 ) then
-        call checkRow ( prhs(7), nleq, 'beq' )
-        call checkCol ( prhs(7),    1, 'beq' )
-        call mxCopyPtrToReal8 ( mxGetPr(prhs(7)), bu(i1:i2), nleq )
+        call checkRow( prhs(7), nleq, 'beq' )
+        call checkCol( prhs(7),    1, 'beq' )
+        call mxCopyPtrToReal8( mxGetPr(prhs(7)), bu(i1:i2), nleq )
      else
-        call mexErrMsgTxt ( 'Missing linear equality constraint rhs beq' )
+        call mexErrMsgTxt( 'Missing linear equality constraint rhs beq' )
      end if
 
      bl(i1:i2) = bu(i1:i2)
@@ -443,11 +441,11 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
   ! STOP function
   !-----------------------------------------------------------------------------
   if ( nrhs > 12 ) then
-     info = mxIsClass ( prhs(13), 'function_handle' )
+     info = mxIsClass( prhs(13), 'function_handle' )
      if ( info /= 1 ) then
         stopHandle = 0
      else
-        stopHandle = mxDuplicateArray ( prhs(13) )
+        stopHandle = mxDuplicateArray( prhs(13) )
      end if
 
   else
@@ -468,8 +466,8 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
 
   ldH      = n
 
-  allocate ( gObj(n), fCon(ldJ), H(ldH,n) )
-  allocate ( state(n+m), Names(nNames) )
+  allocate( gObj(n), fCon(ldJ), H(ldH,n) )
+  allocate( state(n+m), Names(nNames) )
 
   state    = 0
   probName = 'matlabMx'
@@ -490,12 +488,12 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
   if ( INFO == 83 ) then
      ! Not enough integer space
      leniw = miniw
-     allocate ( iw0(leniw) )
+     allocate( iw0(leniw) )
      iw0(1:500) = iw(1:500)
 
      call move_alloc( from=iw0, to=iw )
      call dnSetInt &
-          ( 'Total integer   workspace', leniw, 0, 0, Errors, &
+          ( 'Total integer workspace', leniw, 0, 0, Errors, &
              cw, lencw, iw, leniw, rw, lenrw )
      go to 100
   end if
@@ -508,7 +506,7 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
 
      call move_alloc( from=rw0, to=rw )
      call dnSetInt &
-          ( 'Total real      workspace', lenrw, 0, 0, Errors, &
+          ( 'Total real workspace', lenrw, 0, 0, Errors, &
             cw, lencw, iw, leniw, rw, lenrw )
      go to 100
   end if
@@ -518,92 +516,104 @@ subroutine dnmxSolve ( nlhs, plhs, nrhs, prhs )
   ! Set output
   !-----------------------------------------------------------------------------
   if ( nlhs > 0 ) then
-     plhs(1) = mxCreateDoubleMatrix ( n, 1, 0 )
-     call mxCopyReal8ToPtr ( x(1:n), mxGetPr(plhs(1)), n )
+     plhs(1) = mxCreateDoubleMatrix( n, 1, 0 )
+     call mxCopyReal8ToPtr( x(1:n), mxGetPr(plhs(1)), n )
   end if
 
 
   ! Final objective
-  if ( nlhs > 1 ) plhs(2) = mxCreateDoubleScalar ( Obj )
+  if ( nlhs > 1 ) plhs(2) = mxCreateDoubleScalar( Obj )
 
 
   ! Exit flag
   rtmp = info
-  if ( nlhs > 2 ) plhs(3) = mxCreateDoubleScalar ( rtmp )
+  if ( nlhs > 2 ) plhs(3) = mxCreateDoubleScalar( rtmp )
 
 
   ! Iterations
   rtmp = iw(nItn)
-  if ( nlhs > 3 ) plhs(4) = mxCreateDoubleScalar ( rtmp )
+  if ( nlhs > 3 ) plhs(4) = mxCreateDoubleScalar( rtmp )
 
 
   ! Function evaluations
   rtmp = iw(nfObj1) + iw(nfCon1)
-  if ( nlhs > 4 ) plhs(5) = mxCreateDoubleScalar ( rtmp )
+  if ( nlhs > 4 ) plhs(5) = mxCreateDoubleScalar( rtmp )
 
 
   ! Multipliers for bounds
   if ( nlhs > 5 ) then
-     plhs(6) = mxCreateDoubleMatrix ( n, 1, 0 )
-     call mxCopyReal8ToPtr ( y(1:n), mxGetPr(plhs(6)), n )
+     plhs(6) = mxCreateDoubleMatrix( n, 1, 0 )
+     call mxCopyReal8ToPtr( y(1:n), mxGetPr(plhs(6)), n )
   end if
 
 
   ! Multipliers for linear inequalities
   if ( nlhs > 6 ) then
-     plhs(7) = mxCreateDoubleMatrix ( nlin, 1, 0 )
-     i1 = 1+n+nnCon
-     i2 = i1-1+nlin
-     call mxCopyReal8ToPtr ( y(i1:i2), mxGetPr(plhs(7)), nlin )
+     if ( nlin > 0 ) then
+        plhs(7) = mxCreateDoubleMatrix( nlin, 1, 0 )
+        i1 = 1+n+nnCon
+        i2 = i1-1+nlin
+        call mxCopyReal8ToPtr( y(i1:i2), mxGetPr(plhs(7)), nlin )
+     else
+        plhs(7) = mxCreateDoubleScalar(0.0)
+     end if
   end if
 
 
   ! Multipliers for linear equalities
   if ( nlhs > 7 ) then
-     plhs(8) = mxCreateDoubleMatrix ( nleq, 1, 0 )
-     i1 = 1+n+nnCon+nlin
-     i2 = i1-1+nleq
-     call mxCopyReal8ToPtr ( y(i1:i2), mxGetPr(plhs(8)), nleq )
+     if ( nleq > 0 ) then
+        plhs(8) = mxCreateDoubleMatrix( nleq, 1, 0 )
+        i1 = 1+n+nnCon+nlin
+        i2 = i1-1+nleq
+        call mxCopyReal8ToPtr( y(i1:i2), mxGetPr(plhs(8)), nleq )
+     else
+        plhs(8) = mxCreateDoubleScalar(0.0)
+     end if
   end if
 
 
   ! Multipliers for nonlinear inequalities
   if ( nlhs > 8 ) then
-     plhs(9) = mxCreateDoubleMatrix ( nnin, 1, 0 )
      if ( nnin > 0 ) then
+        plhs(9) = mxCreateDoubleMatrix( nnin, 1, 0 )
         i1 = 1+n
         i2 = i1-1+nnin
-        call mxCopyReal8ToPtr ( y(i1:i2), mxGetPr(plhs(9)), nnin )
+        call mxCopyReal8ToPtr( y(i1:i2), mxGetPr(plhs(9)), nnin )
+     else
+        plhs(9) = mxCreateDoubleScalar(0.0)
      end if
   end if
 
 
   ! Multipliers for nonlinear equalities
   if ( nlhs > 9 ) then
-     plhs(10) = mxCreateDoubleMatrix ( nneq, 1, 0 )
      if ( nneq > 0 ) then
+        plhs(10) = mxCreateDoubleMatrix( nneq, 1, 0 )
         i1 = 1+n+nnin
         i2 = i1-1+nneq
-        call mxCopyReal8ToPtr ( y(i1:i2), mxGetPr(plhs(10)), nneq )
+        call mxCopyReal8ToPtr( y(i1:i2), mxGetPr(plhs(10)), nneq )
+     else
+        plhs(10) = mxCreateDoubleScalar(0.0)
      end if
   end if
 
 
   ! Deallocate memory
-  if ( allocated(Names) ) deallocate ( Names )
-  if ( allocated(state) ) deallocate ( state )
+  if ( allocated(Names) ) deallocate( Names )
+  if ( allocated(state) ) deallocate( state )
 
-  if ( allocated(x) )     deallocate ( x )
-  if ( allocated(bl) )    deallocate ( bl )
-  if ( allocated(bu) )    deallocate ( bu )
-  if ( allocated(y) )     deallocate ( y )
+  if ( allocated(x) )     deallocate( x )
+  if ( allocated(bl) )    deallocate( bl )
+  if ( allocated(bu) )    deallocate( bu )
+  if ( allocated(y) )     deallocate( y )
 
-  if ( allocated(H) )     deallocate ( H )
-  if ( allocated(A) )     deallocate ( A )
-  if ( allocated(Jcon) )  deallocate ( Jcon )
+  if ( allocated(H) )     deallocate( H )
+  if ( allocated(A) )     deallocate( A )
+  if ( allocated(Jcon) )  deallocate( Jcon )
 
-  if ( allocated(fCon) )  deallocate ( fCon )
-  if ( allocated(gObj) )  deallocate ( gObj )
+  if ( allocated(fCon) )  deallocate( fCon )
+  if ( allocated(gObj) )  deallocate( gObj )
 
 end subroutine dnmxSolve
 
@@ -634,73 +644,73 @@ subroutine dnmxOptions ( iOpt, nlhs, plhs, nrhs, prhs )
 
 
   if ( iOpt == dnSetI .or. iOpt == dnSetR ) then
-     if ( nrhs /= 3 ) call mexErrMsgTxt ( 'Wrong number of input arguments' )
+     if ( nrhs /= 3 ) call mexErrMsgTxt( 'Wrong number of input arguments' )
   else
-     if ( nrhs /= 2 ) call mexErrMsgTxt ( 'Wrong number of input arguments' )
+     if ( nrhs /= 2 ) call mexErrMsgTxt( 'Wrong number of input arguments' )
   end if
 
 
   ! Get string
   info = mxIsChar(prhs(2))
-  if ( info /= 1 ) call mexErrMsgTxt ( 'Need filename string' )
+  if ( info /= 1 ) call mexErrMsgTxt( 'Need filename string' )
 
   strlen = mxGetN(prhs(2))
-  if ( strlen > 50 ) call mexErrMsgTxt ( 'Option string is too long' )
+  if ( strlen > 50 ) call mexErrMsgTxt( 'Option string is too long' )
 
   if ( strlen > 0 ) then
-     call mxGetString ( prhs(2), buffer, strlen )
+     call mxGetString( prhs(2), buffer, strlen )
   else
-     call mexErrMsgTxt ( 'Empty option string' )
+     call mexErrMsgTxt( 'Empty option string' )
   end if
 
 
   if      ( iOpt == dnSetX  ) then
-     call dnSet ( buffer, iPrint, iSumm, Errors, &
-                  cw, lencw, iw, leniw, rw, lenrw )
+     call dnSet( buffer, iPrint, iSumm, Errors, &
+                 cw, lencw, iw, leniw, rw, lenrw )
 
   else if ( iOpt == dnSetI  ) then
 
-     rvalue = mxGetScalar (prhs(3))
+     rvalue = mxGetScalar(prhs(3))
      ivalue = rvalue
 
-     call dnSetInt ( buffer, ivalue, iPrint, iSumm, Errors, &
-                     cw, lencw, iw, leniw, rw, lenrw )
+     call dnSetInt( buffer, ivalue, iPrint, iSumm, Errors, &
+                    cw, lencw, iw, leniw, rw, lenrw )
 
   else if ( iOpt == dnSetR  ) then
 
-     rvalue = mxGetScalar (prhs(3))
+     rvalue = mxGetScalar(prhs(3))
 
-     call dnSetReal ( buffer, rvalue, iPrint, iSumm, Errors, &
-                      cw, lencw, iw, leniw, rw, lenrw )
+     call dnSetReal( buffer, rvalue, iPrint, iSumm, Errors, &
+                     cw, lencw, iw, leniw, rw, lenrw )
 
   else if ( iOpt == dnGetX  ) then
 
-     ivalue  = dnGet ( buffer, Errors, cw, lencw, iw, leniw, rw, lenrw )
+     ivalue  = dnGet( buffer, Errors, cw, lencw, iw, leniw, rw, lenrw )
 
      rvalue  = ivalue
-     plhs(1) = mxCreateDoubleScalar ( rvalue )
+     plhs(1) = mxCreateDoubleScalar( rvalue )
 
   else if ( iOpt == dnGetC  ) then
 
-     call dnGetChar ( buffer, cvalue, Errors, &
-                      cw, lencw, iw, leniw, rw, lenrw )
+     call dnGetChar( buffer, cvalue, Errors, &
+                     cw, lencw, iw, leniw, rw, lenrw )
 
      plhs(1) = mxCreateString(cvalue)
 
   else if ( iOpt == dnGetI  ) then
 
-     call dnGetInt ( buffer, ivalue, Errors, &
-                     cw, lencw, iw, leniw, rw, lenrw )
+     call dnGetInt( buffer, ivalue, Errors, &
+                    cw, lencw, iw, leniw, rw, lenrw )
 
      rvalue = ivalue
-     plhs(1) = mxCreateDoubleScalar ( rvalue )
+     plhs(1) = mxCreateDoubleScalar( rvalue )
 
   else if ( iOpt == dnGetR  ) then
 
-     call dnGetReal ( buffer, rvalue, Errors, &
-                      cw, lencw, iw, leniw, rw, lenrw )
+     call dnGetReal( buffer, rvalue, Errors, &
+                     cw, lencw, iw, leniw, rw, lenrw )
 
-     plhs(1) = mxCreateDoubleScalar ( rvalue )
+     plhs(1) = mxCreateDoubleScalar( rvalue )
 
   end if
 
@@ -708,9 +718,8 @@ end subroutine dnmxOptions
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-subroutine dnmxSpecs ( nlhs, plhs, nrhs, prhs )
+subroutine dnmxSpecs( nlhs, plhs, nrhs, prhs )
   use mxdnWork
-
   implicit none
   integer*4  :: nlhs, nrhs
   mwPointer  :: prhs(*), plhs(*)
@@ -728,27 +737,27 @@ subroutine dnmxSpecs ( nlhs, plhs, nrhs, prhs )
   external         :: dnSpec
 
 
-  if ( nrhs /= 2 ) call mexErrMsgTxt ( 'Wrong number of input arguments' )
-  if ( nlhs /= 1 ) call mexErrMsgTxt ( 'Wrong number of output arguments' )
+  if ( nrhs /= 2 ) call mexErrMsgTxt( 'Wrong number of input arguments' )
+  if ( nlhs /= 1 ) call mexErrMsgTxt( 'Wrong number of output arguments' )
 
 
   info = mxIsChar(prhs(2))
-  if ( info /= 1 ) call mexErrMsgTxt ( 'Need filename string' )
+  if ( info /= 1 ) call mexErrMsgTxt( 'Need filename string' )
 
   strlen = mxGetN(prhs(2))
-  if ( strlen > 120 ) call mexErrMsgTxt ( 'Specs filename is too long' )
+  if ( strlen > 120 ) call mexErrMsgTxt( 'Specs filename is too long' )
 
   if ( strlen > 0 ) then
-     call mxGetString ( prhs(2), filename, strlen )
+     call mxGetString( prhs(2), filename, strlen )
   else
-     call mexErrMsgTxt ( 'Empty spc filename' )
+     call mexErrMsgTxt( 'Empty spc filename' )
   end if
 
 
-  open ( iSpecs, file=filename, status='unknown' )
-  call dnSpec ( iSpecs, info, cw, lencw, iw, leniw, rw, lenrw )
-  rewind ( iSpecs )
-  close ( iSpecs )
+  open( iSpecs, file=filename, status='unknown' )
+  call dnSpec( iSpecs, info, cw, lencw, iw, leniw, rw, lenrw )
+  rewind( iSpecs )
+  close( iSpecs )
 
   ! dnSpec will return info == 101 or 107 if successful
   ! The matlab version returns 0 if successful
@@ -758,15 +767,14 @@ subroutine dnmxSpecs ( nlhs, plhs, nrhs, prhs )
      rvalue = 1
   end if
 
-  plhs(1) = mxCreateDoubleScalar ( rvalue )
+  plhs(1) = mxCreateDoubleScalar( rvalue )
 
 end subroutine dnmxSpecs
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
+subroutine dnmxSolveN( nlhs, plhs, nrhs, prhs )
   use mxdnWork
-
   implicit none
   integer*4  :: nlhs, nrhs
   mwPointer  :: prhs(*), plhs(*)
@@ -825,7 +833,7 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
 
   ! Check number of input and output arguments.
   if ( nrhs /= 7 .and. nrhs /= 10 .and. nrhs /= 14 ) &
-       call mexErrMsgTxt ( 'Wrong number of input arguments' )
+       call mexErrMsgTxt( 'Wrong number of input arguments' )
 
 
   !-----------------------------------------------------------------------------
@@ -835,29 +843,29 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
   if ( info /= 1 ) then
      stopHandle = 0
   else
-     stopHandle = mxDuplicateArray ( prhs(2) )
+     stopHandle = mxDuplicateArray( prhs(2) )
   end if
 
 
   !-----------------------------------------------------------------------------
   ! Problem name
   !-----------------------------------------------------------------------------
-  info = mxIsChar ( prhs(3) )
-  if ( info /= 1 ) call mexErrMsgTxt ( 'Wrong input type for problem name' )
+  info = mxIsChar( prhs(3) )
+  if ( info /= 1 ) call mexErrMsgTxt( 'Wrong input type for problem name' )
 
   strlen = mxGetN(prhs(3))
   if ( strlen > 8 ) strlen = 8
 
   probName = ''
-  call mxGetString ( prhs(3), probName, strlen )
+  call mxGetString( prhs(3), probName, strlen )
 
 
   !-----------------------------------------------------------------------------
   ! Objective function
   !-----------------------------------------------------------------------------
   info = mxIsClass( prhs(4), 'function_handle')
-  if ( info /= 1 ) call mexErrMsgTxt ( 'Wrong input type for obj' )
-  objHandle = mxDuplicateArray ( prhs(4) )
+  if ( info /= 1 ) call mexErrMsgTxt( 'Wrong input type for obj' )
+  objHandle = mxDuplicateArray( prhs(4) )
 
 
   !-----------------------------------------------------------------------------
@@ -871,7 +879,7 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
   ! Get number of linear inequality constraint lA <= Ax <= uA
   if ( nrhs > 7 ) then
      nlCon = mxGetM(prhs(8))
-     if ( nlCon > 0 ) call checkCol ( prhs(8), n, 'A' )
+     if ( nlCon > 0 ) call checkCol( prhs(8), n, 'A' )
 
   else
      nlCon = 0
@@ -883,12 +891,12 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
   !-----------------------------------------------------------------------------
   if ( nlCon > 0 ) then
      ldA = nlCon
-     allocate ( A(ldA,n) )
+     allocate( A(ldA,n) )
 
-     call mxCopyPtrToReal8 ( mxGetPr(prhs(8)), A(1:nlCon,1:n), nlCon*n )
+     call mxCopyPtrToReal8( mxGetPr(prhs(8)), A(1:nlCon,1:n), nlCon*n )
   else
      ldA = 1
-     allocate ( A(ldA,n) )
+     allocate( A(ldA,n) )
   end if
 
 
@@ -896,10 +904,10 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
   ! Get the number of nonlinear constraints
   !-----------------------------------------------------------------------------
   if ( nrhs > 10 ) then
-     info = mxIsClass ( prhs(11), 'function_handle' )
-     if ( info /= 1 ) call mexErrMsgTxt ( 'Wrong input type for nonlcon' )
+     info = mxIsClass( prhs(11), 'function_handle' )
+     if ( info /= 1 ) call mexErrMsgTxt( 'Wrong input type for nonlcon' )
 
-     conHandle = mxDuplicateArray ( prhs(11) )
+     conHandle = mxDuplicateArray( prhs(11) )
 
      ! Set the total number of nonlinear constraints
      nnCon = mxGetM(prhs(14))
@@ -914,14 +922,14 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
   !-----------------------------------------------------------------------------
   if ( nnCon > 0 ) then
      ldJ = nnCon
-     allocate ( Jcon(ldJ,n) )
+     allocate( Jcon(ldJ,n) )
 
-     call checkCol ( prhs(14), n, 'J' )
-     call mxCopyPtrToReal8 ( mxGetPr(prhs(14)), Jcon(1:nnCon,1:n), nnCon*n )
+     call checkCol( prhs(14), n, 'J' )
+     call mxCopyPtrToReal8( mxGetPr(prhs(14)), Jcon(1:nnCon,1:n), nnCon*n )
 
   else
      ldJ = 1
-     allocate ( Jcon(1,1) )
+     allocate( Jcon(1,1) )
   end if
 
 
@@ -929,12 +937,12 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
   ! Allocate space for DNOPT
   !-----------------------------------------------------------------------------
   m     = nlCon + nnCon   ! total number of constraints
-  allocate ( bl(n+m), bu(n+m), x(n+m), y(n+m) )
+  allocate( bl(n+m), bu(n+m), x(n+m), y(n+m) )
 
   ! Get initial x
   x = 0.0
   y = 0.0
-  call mxCopyPtrToReal8 ( mxGetPr(prhs(5)), x(1:n), n )
+  call mxCopyPtrToReal8( mxGetPr(prhs(5)), x(1:n), n )
 
 
   !-----------------------------------------------------------------------------
@@ -945,17 +953,17 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
 
      ! Check dimension of xl and xu
      if ( mxGetM(prhs(6)) > 0 ) then
-        call checkRow ( prhs(6), n, 'xl' )
-        call checkCol ( prhs(6), 1, 'xl' )
-        call mxCopyPtrToReal8 ( mxGetPr(prhs(6)), bl(1:n), n )
+        call checkRow( prhs(6), n, 'xl' )
+        call checkCol( prhs(6), 1, 'xl' )
+        call mxCopyPtrToReal8( mxGetPr(prhs(6)), bl(1:n), n )
      else
         bl(1:n) = -infBnd
      end if
 
      if ( mxGetM(prhs(7)) > 0 ) then
-        call checkRow ( prhs(7), n, 'xu' )
-        call checkCol ( prhs(7), 1, 'xu' )
-        call mxCopyPtrToReal8 ( mxGetPr(prhs(7)), bu(1:n), n )
+        call checkRow( prhs(7), n, 'xu' )
+        call checkCol( prhs(7), 1, 'xu' )
+        call mxCopyPtrToReal8( mxGetPr(prhs(7)), bu(1:n), n )
      else
         bu(1:n) = infBnd
      end if
@@ -972,17 +980,17 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
      i2 = i1-1+nnCon
 
      if ( mxGetM(prhs(12)) > 0 ) then
-        call checkRow ( prhs(12), nnCon, 'cl' )
-        call checkCol ( prhs(12),     1, 'cl' )
-        call mxCopyPtrToReal8 ( mxGetPr(prhs(12)), bl(i1:i2), nnCon )
+        call checkRow( prhs(12), nnCon, 'cl' )
+        call checkCol( prhs(12),     1, 'cl' )
+        call mxCopyPtrToReal8( mxGetPr(prhs(12)), bl(i1:i2), nnCon )
      else
         bl(i1:i2) = -infBnd
      end if
 
      if ( mxGetM(prhs(13)) > 0 ) then
-        call checkRow ( prhs(13), nnCon, 'cu' )
-        call checkCol ( prhs(13),     1, 'cu' )
-        call mxCopyPtrToReal8 ( mxGetPr(prhs(13)), bu(i1:i2), nnCon )
+        call checkRow( prhs(13), nnCon, 'cu' )
+        call checkCol( prhs(13),     1, 'cu' )
+        call mxCopyPtrToReal8( mxGetPr(prhs(13)), bu(i1:i2), nnCon )
      else
         bu(i1:i2) = infBnd
      end if
@@ -997,17 +1005,17 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
 
      ! Check dimension of lA and uA
      if ( mxGetM(prhs(9)) > 0 ) then
-        call checkRow ( prhs(9), nlCon, 'al' )
-        call checkCol ( prhs(9),     1, 'al' )
-        call mxCopyPtrToReal8 ( mxGetPr(prhs(9)), bl(i1:i2), nlCon )
+        call checkRow( prhs(9), nlCon, 'al' )
+        call checkCol( prhs(9),     1, 'al' )
+        call mxCopyPtrToReal8( mxGetPr(prhs(9)), bl(i1:i2), nlCon )
      else
         bl(i1:i2) = -infBnd
      end if
 
      if ( mxGetM(prhs(10)) > 0 ) then
-        call checkRow ( prhs(10), nlCon, 'au' )
-        call checkCol ( prhs(10),     1, 'au' )
-        call mxCopyPtrToReal8 ( mxGetPr(prhs(10)), bu(i1:i2), nlCon )
+        call checkRow( prhs(10), nlCon, 'au' )
+        call checkCol( prhs(10),     1, 'au' )
+        call mxCopyPtrToReal8( mxGetPr(prhs(10)), bu(i1:i2), nlCon )
      else
         bu(i1:i2) = infBnd
      end if
@@ -1028,8 +1036,8 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
 
   ldH      = n
 
-  allocate ( gObj(n), fCon(ldJ), H(ldH,n) )
-  allocate ( state(n+m), Names(nNames) )
+  allocate( gObj(n), fCon(ldJ), H(ldH,n) )
+  allocate( state(n+m), Names(nNames) )
 
   state    = 0
 
@@ -1049,7 +1057,7 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
   if ( INFO == 83 ) then
      ! Not enough integer space
      leniw = miniw
-     allocate ( iw0(leniw) )
+     allocate( iw0(leniw) )
      iw0(1:500) = iw(1:500)
 
      call move_alloc( from=iw0, to=iw )
@@ -1062,7 +1070,7 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
   if ( INFO == 84 ) then
     ! Not enough real space
      lenrw = minrw
-     allocate ( rw0(lenrw) )
+     allocate( rw0(lenrw) )
      rw0(1:500) = rw(1:500)
 
      call move_alloc( from=rw0, to=rw )
@@ -1076,81 +1084,85 @@ subroutine dnmxSolveN ( nlhs, plhs, nrhs, prhs )
   ! Set output
   !-----------------------------------------------------------------------------
   if ( nlhs > 0 ) then
-     plhs(1) = mxCreateDoubleMatrix ( n, 1, 0 )
-     call mxCopyReal8ToPtr ( x(1:n), mxGetPr(plhs(1)), n )
+     plhs(1) = mxCreateDoubleMatrix( n, 1, 0 )
+     call mxCopyReal8ToPtr( x(1:n), mxGetPr(plhs(1)), n )
   end if
 
 
   ! Final objective
-  if ( nlhs > 1 ) plhs(2) = mxCreateDoubleScalar ( Obj )
+  if ( nlhs > 1 ) plhs(2) = mxCreateDoubleScalar( Obj )
 
 
   ! Exit flag
   rtmp = info
-  if ( nlhs > 2 ) plhs(3) = mxCreateDoubleScalar ( rtmp )
+  if ( nlhs > 2 ) plhs(3) = mxCreateDoubleScalar( rtmp )
 
 
   ! Iterations
   rtmp = iw(nItn)
-  if ( nlhs > 3 ) plhs(4) = mxCreateDoubleScalar ( rtmp )
+  if ( nlhs > 3 ) plhs(4) = mxCreateDoubleScalar( rtmp )
 
 
   ! Function evaluations
   rtmp = iw(nfObj1) + iw(nfCon1)
-  if ( nlhs > 4 ) plhs(5) = mxCreateDoubleScalar ( rtmp )
+  if ( nlhs > 4 ) plhs(5) = mxCreateDoubleScalar( rtmp )
 
 
   ! Multipliers for bounds
   if ( nlhs > 5 ) then
-     plhs(6) = mxCreateDoubleMatrix ( n, 1, 0 )
-     call mxCopyReal8ToPtr ( y(1:n), mxGetPr(plhs(6)), n )
+     plhs(6) = mxCreateDoubleMatrix( n, 1, 0 )
+     call mxCopyReal8ToPtr( y(1:n), mxGetPr(plhs(6)), n )
   end if
 
 
   ! Multipliers for linear constraints
   if ( nlhs > 6 ) then
-     plhs(7) = mxCreateDoubleMatrix ( nlCon, 1, 0 )
      if ( nlCon > 0 ) then
+        plhs(7) = mxCreateDoubleMatrix( nlCon, 1, 0 )
         i1 = 1+n+nnCon
         i2 = i1-1+nlCon
-        call mxCopyReal8ToPtr ( y(i1:i2), mxGetPr(plhs(7)), nlCon )
+        call mxCopyReal8ToPtr( y(i1:i2), mxGetPr(plhs(7)), nlCon )
+     else
+        plhs(7) = mxCreateDoubleScalar(0.0)
      end if
   end if
 
 
   ! Multipliers for nonlinear inequalities
   if ( nlhs > 7 ) then
-     plhs(8) = mxCreateDoubleMatrix ( nnCon, 1, 0 )
      if ( nnCon > 0 ) then
+        plhs(8) = mxCreateDoubleMatrix( nnCon, 1, 0 )
         i1 = 1+n
         i2 = i1-1+nnCon
-        call mxCopyReal8ToPtr ( y(i1:i2), mxGetPr(plhs(8)), nnCon )
+        call mxCopyReal8ToPtr( y(i1:i2), mxGetPr(plhs(8)), nnCon )
+     else
+        plhs(8) = mxCreateDoubleScalar(0.0)
      end if
   end if
 
 
   ! Deallocate memory
-  if ( allocated(Names) ) deallocate ( Names )
-  if ( allocated(state) ) deallocate ( state )
+  if ( allocated(Names) ) deallocate( Names )
+  if ( allocated(state) ) deallocate( state )
 
-  if ( allocated(x) )     deallocate ( x )
-  if ( allocated(bl) )    deallocate ( bl )
-  if ( allocated(bu) )    deallocate ( bu )
-  if ( allocated(y) )     deallocate ( y )
+  if ( allocated(x) )     deallocate( x )
+  if ( allocated(bl) )    deallocate( bl )
+  if ( allocated(bu) )    deallocate( bu )
+  if ( allocated(y) )     deallocate( y )
 
-  if ( allocated(H) )     deallocate ( H )
-  if ( allocated(A) )     deallocate ( A )
-  if ( allocated(Jcon) )  deallocate ( Jcon )
+  if ( allocated(H) )     deallocate( H )
+  if ( allocated(A) )     deallocate( A )
+  if ( allocated(Jcon) )  deallocate( Jcon )
 
-  if ( allocated(fCon) )  deallocate ( fCon )
-  if ( allocated(gObj) )  deallocate ( gObj )
+  if ( allocated(fCon) )  deallocate( fCon )
+  if ( allocated(gObj) )  deallocate( gObj )
 
 end subroutine dnmxSolveN
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-subroutine matlabObj ( mode, nnObj, x, fObj, gObj, Status, &
-                       cu, lencu, iu, leniu, ru, lenru )
+subroutine matlabObj( mode, nnObj, x, fObj, gObj, Status, &
+                      cu, lencu, iu, leniu, ru, lenru )
   use mxdnWork
   implicit none
 
@@ -1175,31 +1187,31 @@ subroutine matlabObj ( mode, nnObj, x, fObj, gObj, Status, &
   prhs(1) = mxDuplicateArray( objHandle )
   prhs(2) = mxCreateDoubleMatrix( nnObj, 1, 0 )
 
-  call mxCopyReal8ToPtr ( x, mxGetPr(prhs(2)), nnObj )
+  call mxCopyReal8ToPtr( x, mxGetPr(prhs(2)), nnObj )
 
   ! Call Matlab: [f,g] = obj(x)
   !  dncon calls conHandle(x), then transposes gradients to get the Jacobian
-  call mexCallMatlab ( nlhs, plhs, nrhs, prhs, 'dnobj' )
+  call mexCallMatlab( nlhs, plhs, nrhs, prhs, 'dnobj' )
 
   if ( nlhs < 2 ) &
-       call mexErrMsgTxt ( 'User must provide the objective gradient in obj' )
+       call mexErrMsgTxt( 'User must provide the objective gradient in obj' )
   if ( nlhs /= 2 ) &
-       call mexErrMsgTxt ( 'Incorrect number of output arguments in obj' )
+       call mexErrMsgTxt( 'Incorrect number of output arguments in obj' )
 
 
   ! Set fObj and gObj
   if ( mode == 0 .or. mode == 2 ) then
-     fObj = mxGetScalar (plhs(1))
+     fObj = mxGetScalar(plhs(1))
   end if
 
   if ( mode == 1 .or. mode == 2 ) then
-     fObj = mxGetScalar (plhs(1))
+     fObj = mxGetScalar(plhs(1))
 
      mm = mxGetM( plhs(2) )
      nn = mxGetN( plhs(2) )
 
      if ( (mm == 1 .and. nn == nnObj) .or. (mm == nnObj .and. nn == 1) ) then
-        call mxCopyPtrToReal8 ( mxGetPr(plhs(2)), gObj, nnObj )
+        call mxCopyPtrToReal8( mxGetPr(plhs(2)), gObj, nnObj )
      else if ( mm == 0 .and. nn == 0 ) then
      else
         call mexErrMsgTxt ( 'gObj has incorrect dimensions ' )
@@ -1208,18 +1220,18 @@ subroutine matlabObj ( mode, nnObj, x, fObj, gObj, Status, &
 
 
   ! Destroy arrays
-  call mxDestroyArray ( plhs(1) )
-  call mxDestroyArray ( plhs(2) )
+  call mxDestroyArray( plhs(1) )
+  call mxDestroyArray( plhs(2) )
 
-  call mxDestroyArray ( prhs(1) )
-  call mxDestroyArray ( prhs(2) )
+  call mxDestroyArray( prhs(1) )
+  call mxDestroyArray( prhs(2) )
 
 end subroutine matlabObj
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-subroutine matlabCon ( mode, nnCon, nnJac, x, fCon, Jcon, ldJ, Status, &
-                       cu, lencu, iu, leniu, ru, lenru )
+subroutine matlabCon( mode, nnCon, nnJac, x, fCon, Jcon, ldJ, Status, &
+                      cu, lencu, iu, leniu, ru, lenru )
   use mxdnWork
   implicit none
 
@@ -1249,32 +1261,32 @@ subroutine matlabCon ( mode, nnCon, nnJac, x, fCon, Jcon, ldJ, Status, &
   nrhs = 2
 
   if ( nnCon > 0 ) then
-     prhs(1) = mxDuplicateArray ( conHandle )
+     prhs(1) = mxDuplicateArray( conHandle )
      prhs(2) = mxCreateDoubleMatrix( nnJac, 1, 0 )
-     call mxCopyReal8ToPtr ( x, mxGetPr(prhs(2)), nnJac )
+     call mxCopyReal8ToPtr( x, mxGetPr(prhs(2)), nnJac )
 
 
      ! Call Matlab:  [c,ceq,J,Jeq] = dncon(conHandle,x)
      !  dncon calls conHandle(x), then transposes gradients to get the Jacobian
-     call mexCallMatlab ( nlhs, plhs, nrhs, prhs, 'dncon' )
+     call mexCallMatlab( nlhs, plhs, nrhs, prhs, 'dncon' )
 
      if ( nlhs < 4 ) &
-          call mexErrMsgTxt ( 'User must provide the Jacobian matrix in nonlcon' )
+          call mexErrMsgTxt( 'User must provide the Jacobian matrix in nonlcon' )
      if ( nlhs /= 4 ) &
-          call mexErrMsgTxt ( 'Incorrect number of output arguments in nonlcon' )
+          call mexErrMsgTxt( 'Incorrect number of output arguments in nonlcon' )
 
      ! Set output
      if ( mode == 0 .or. mode == 2 ) then
         if ( nnin > 0 ) then
-           call checkRow ( plhs(1), nnin, 'c' )
-           call checkCol ( plhs(1),    1, 'c' )
-           call mxCopyPtrToReal8 ( mxGetPr(plhs(1)), fCon(1:nnin),       nnin )
+           call checkRow( plhs(1), nnin, 'c' )
+           call checkCol( plhs(1),    1, 'c' )
+           call mxCopyPtrToReal8( mxGetPr(plhs(1)), fCon(1:nnin),       nnin )
         end if
 
         if ( nneq > 0 ) then
-           call checkRow ( plhs(2), nneq, 'ceq' )
-           call checkCol ( plhs(2),    1, 'ceq' )
-           call mxCopyPtrToReal8 ( mxGetPr(plhs(2)), fCon(1+nnin:nnCon), nneq )
+           call checkRow( plhs(2), nneq, 'ceq' )
+           call checkCol( plhs(2),    1, 'ceq' )
+           call mxCopyPtrToReal8( mxGetPr(plhs(2)), fCon(1+nnin:nnCon), nneq )
         end if
      end if
 
@@ -1284,9 +1296,9 @@ subroutine matlabCon ( mode, nnCon, nnJac, x, fCon, Jcon, ldJ, Status, &
            nn = mxGetN( plhs(3) )
 
            if ( mm /= 0 .or. nn /= 0 ) then
-              call checkRow ( plhs(3), nnin, 'J' )
-              call checkCol ( plhs(3),    n, 'J' )
-              call mxCopyPtrToReal8 ( mxGetPr(plhs(3)), Jcon(1:nnin,1:n), nnin*n )
+              call checkRow( plhs(3), nnin, 'J' )
+              call checkCol( plhs(3),    n, 'J' )
+              call mxCopyPtrToReal8( mxGetPr(plhs(3)), Jcon(1:nnin,1:n), nnin*n )
            end if
         end if
 
@@ -1295,33 +1307,32 @@ subroutine matlabCon ( mode, nnCon, nnJac, x, fCon, Jcon, ldJ, Status, &
            nn = mxGetN( plhs(4) )
 
            if ( mm /= 0 .or. nn /= 0 ) then
-              call checkRow ( plhs(4), nneq, 'Jeq' )
-              call checkCol ( plhs(4),    n, 'Jeq' )
-              call mxCopyPtrToReal8 ( mxGetPr(plhs(4)), Jcon(1+nnin:nnCon,1:n), nneq*n )
+              call checkRow( plhs(4), nneq, 'Jeq' )
+              call checkCol( plhs(4),    n, 'Jeq' )
+              call mxCopyPtrToReal8( mxGetPr(plhs(4)), Jcon(1+nnin:nnCon,1:n), nneq*n )
            end if
         end if
      end if
 
 
      ! Destroy arrays
-     call mxDestroyArray ( plhs(1) )
-     call mxDestroyArray ( plhs(2) )
-     call mxDestroyArray ( plhs(3) )
-     call mxDestroyArray ( plhs(4) )
+     call mxDestroyArray( plhs(1) )
+     call mxDestroyArray( plhs(2) )
+     call mxDestroyArray( plhs(3) )
+     call mxDestroyArray( plhs(4) )
 
-     call mxDestroyArray ( prhs(1) )
-     call mxDestroyArray ( prhs(2) )
+     call mxDestroyArray( prhs(1) )
+     call mxDestroyArray( prhs(2) )
   end if
 
 end subroutine matlabCon
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-subroutine matlabConN ( mode, nnCon, nnJac, x, fCon, Jcon, ldJ, Status, &
-                        cu, lencu, iu, leniu, ru, lenru )
+subroutine matlabConN( mode, nnCon, nnJac, x, fCon, Jcon, ldJ, Status, &
+                       cu, lencu, iu, leniu, ru, lenru )
   use mxdnWork
   implicit none
-
   integer          :: mode, nnCon, nnJac, ldJ, Status, &
                       lencu, leniu, lenru, iu(leniu)
   double precision :: fCon(nnCon), x(nnJac), JCon(ldJ,*), ru(lenru)
@@ -1347,27 +1358,27 @@ subroutine matlabConN ( mode, nnCon, nnJac, x, fCon, Jcon, ldJ, Status, &
      nlhs = 2
      nrhs = 2
 
-     prhs(1) = mxDuplicateArray ( conHandle )
+     prhs(1) = mxDuplicateArray( conHandle )
      prhs(2) = mxCreateDoubleMatrix( nnJac, 1, 0 )
-     call mxCopyReal8ToPtr ( x, mxGetPr(prhs(2)), nnJac )
+     call mxCopyReal8ToPtr( x, mxGetPr(prhs(2)), nnJac )
 
 
      ! Call Matlab: [c,J] = dnconN(nonlcon,x)
      !  dnconN calls conHandle(x), then transposes gradients to get the Jacobian
-     call mexCallMatlab ( nlhs, plhs, nrhs, prhs, 'dnconN' )
+     call mexCallMatlab( nlhs, plhs, nrhs, prhs, 'dnconN' )
 
      if ( nlhs < 2 ) &
-          call mexErrMsgTxt ( 'User must provide the Jacobian matrix in nonlcon' )
+          call mexErrMsgTxt( 'User must provide the Jacobian matrix in nonlcon' )
      if ( nlhs /= 2 ) &
-          call mexErrMsgTxt ( 'Incorrect number of output arguments in nonlcon' )
+          call mexErrMsgTxt( 'Incorrect number of output arguments in nonlcon' )
 
 
      ! Set output
      if ( mode == 0 .or. mode == 2 ) then
-        call checkRow ( plhs(1), nnCon, 'c' )
-        call checkCol ( plhs(1),     1, 'c' )
+        call checkRow( plhs(1), nnCon, 'c' )
+        call checkCol( plhs(1),     1, 'c' )
 
-        call mxCopyPtrToReal8 ( mxGetPr(plhs(1)), fCon(1:nnCon), nnCon )
+        call mxCopyPtrToReal8( mxGetPr(plhs(1)), fCon(1:nnCon), nnCon )
      end if
 
      if ( mode == 1 .or. mode == 2 ) then
@@ -1375,19 +1386,19 @@ subroutine matlabConN ( mode, nnCon, nnJac, x, fCon, Jcon, ldJ, Status, &
         nn = mxGetN( plhs(2) )
 
         if ( mm /= 0 .or. nn /= 0 ) then
-           call checkRow ( plhs(2), nnCon, 'J' )
-           call checkCol ( plhs(2),     n, 'J' )
+           call checkRow( plhs(2), nnCon, 'J' )
+           call checkCol( plhs(2),     n, 'J' )
 
-           call mxCopyPtrToReal8 ( mxGetPr(plhs(2)), Jcon(1:nnCon,1:n), nnCon*n )
+           call mxCopyPtrToReal8( mxGetPr(plhs(2)), Jcon(1:nnCon,1:n), nnCon*n )
         end if
      end if
 
      ! Destroy arrays
-     call mxDestroyArray ( plhs(1) )
-     call mxDestroyArray ( plhs(2) )
+     call mxDestroyArray( plhs(1) )
+     call mxDestroyArray( plhs(2) )
 
-     call mxDestroyArray ( prhs(1) )
-     call mxDestroyArray ( prhs(2) )
+     call mxDestroyArray( prhs(1) )
+     call mxDestroyArray( prhs(2) )
   end if
 
 end subroutine matlabConN
@@ -1405,7 +1416,6 @@ subroutine matlabSTOP &
        JQP, ldJQP, gQ, x, yCon, &
        cu, lencu, iu, leniu, ru, lenru, &
        cw, lencw, iw, leniw, rw, lenrw )
-
   use mxdnWork, only : stopHandle
   implicit none
 
@@ -1440,16 +1450,16 @@ subroutine matlabSTOP &
      nlhs    = 1
      nrhs    = 2
 
-     prhs(1) = mxDuplicateArray ( stopHandle )
+     prhs(1) = mxDuplicateArray( stopHandle )
      prhs(2) = mxCreateDoubleMatrix( n, 1, 0 )
-     call mxCopyReal8ToPtr ( x(1:n), mxGetPr(prhs(2)), n )
+     call mxCopyReal8ToPtr( x(1:n), mxGetPr(prhs(2)), n )
 
      ! Call Matlab: stop = stopFunction(x)
-     call mexCallMatlab ( nlhs, plhs, nrhs, prhs, 'feval' )
+     call mexCallMatlab( nlhs, plhs, nrhs, prhs, 'feval' )
 
 
      ! Get iAbort siginal
-     rAbort = mxGetScalar (plhs(1))
+     rAbort = mxGetScalar(plhs(1))
      iAbort = rAbort
 
   end if
