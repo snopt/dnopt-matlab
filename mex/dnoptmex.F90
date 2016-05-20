@@ -219,7 +219,7 @@ subroutine dnmxSolve( nlhs, plhs, nrhs, prhs )
                       nlCon, nleq, nlin, nnCon, nnJac, &
                       nnObj, nNames
   double precision :: rtmp, fObj, Obj, ObjAdd, sInf
-  external         :: dnKernel, dnLog, dnLog2, &
+  external         :: dnKernelB, dnLog, dnLog2, &
                       matlabCon, matlabObj, matlabSTOP
 
   integer,          parameter   :: nItn   = 421, &
@@ -473,7 +473,7 @@ subroutine dnmxSolve( nlhs, plhs, nrhs, prhs )
   probName = 'matlabMx'
   nb       = n + nlCon + nnCon
 
-100 call dnKernel &
+100 call dnKernelB &
          ( start, n, nb, nlCon, nnCon, nnJac, nnObj, &
            probName, Names, nNames, &
            matlabCon, matlabObj, &
@@ -816,7 +816,7 @@ subroutine dnmxSolveN( nlhs, plhs, nrhs, prhs )
                       mincw, miniw, minrw, nInf, nlCon, &
                       nnCon, nnJac, nnObj, nNames
   double precision :: rtmp, fObj, Obj, ObjAdd, sInf
-  external         :: dnopt, dnKernel, dnLog, dnLog2, &
+  external         :: dnopt, dnKernelB, dnLog, dnLog2, &
                       matlabConN, matlabObj, matlabSTOP
 
   integer,          parameter   :: nItn   = 421, &
@@ -1042,7 +1042,7 @@ subroutine dnmxSolveN( nlhs, plhs, nrhs, prhs )
   state    = 0
 
   nb = n + nlCon + nnCon
-100 call dnKernel &
+100 call dnKernelB &
          ( start, n, nb, nlCon, nnCon, nnJac, nnObj, &
            probName, Names, nNames, &
            matlabConN, matlabObj, &
