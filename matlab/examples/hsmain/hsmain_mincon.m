@@ -6,12 +6,12 @@ function hsmain_mincon
 %                                                 + (x(4)-x(5))^4
 %
 %     subject to
-%                  x(1)      + x(2)^2 + x(3)^3         - 3     = 0
-%                              x(2)   - x(3)^2  + x(4) - 1     = 0
-%                  x(1)*x(5)                           - 1     = 0
+%                  x(1)      + x(2)^2 + x(3)^3         - 3     =  0
+%                              x(2)   - x(3)^2  + x(4) - 1     =  0
+%                  x(1)*x(5)                           - 1     =  0
 %
-%                                      -x(3)    - x(4) - x(5) <= 3
-%                 -x(1)      - x(2)                           <= 1
+%                                      -x(3)    - x(4) - x(5) <= -3
+%                 -x(1)      - x(2)                           <= -1
 
 dnScreen ('on');
 dnPrint('hsmain_mincon.out');
@@ -33,7 +33,7 @@ xu =  Inf*ones(n,1);
 %   Inequality constraints:
 A   = [  0  0 -1 -1 -1;
 	-1 -1  0  0  0 ];
-b   = [ 3; 1 ];
+b   = [ -3; -1 ];
 
 %   No equality constraints:
 Aeq = []; beq = [];
