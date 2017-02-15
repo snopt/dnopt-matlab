@@ -18,15 +18,15 @@ function t1diet
 %           (   2   12   54  285   22   80 )        (  800 )
 %
 
-dnScreen ('on');
-dnPrint('t1diet.out');
+dnscreen('on');
+dnprint('t1diet.out');
 
 t1diet.spc = which('t1diet.spc');
-dnSpec ( t1diet.spc );
+dnspec(t1diet.spc);
 
 % Set up problem.
 n  = 6;
-x  = ones (n,1);
+x  = ones(n,1);
 xl = zeros(n,1);
 xu = [ 4
        3
@@ -44,11 +44,18 @@ au = [ Inf; Inf; Inf];
 
 
 % Solve the problem.
-[x,obj,INFO] = dqopt('t1diet', @t1dietobj, x, xl, xu, A, al, au );
+options.name  = 't1diet';
+options.start = 'Cold';
+[x,obj,INFO, output, lambda, states] = dnopt(@t1dietobj, x, xl, ...
+					     xu, A, al, au, options);
 
-dnPrint ('off');
-dnScreen ('off');
-dnEnd;
+options.start = 'Warm';
+[x,obj,INFO] = dnopt(@t1dietobj, x, xl, xu, A, al, au, states, ...
+		     lambda, options);
+
+dnprint('off');
+dnscreen('off');
+dnend;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -15,12 +15,12 @@ function hs76_mincon
 % Add path to DQOPT matlab files
 addpath([pwd,'/../../'], '-end');
 
-dqScreen ('on');
-dqPrint('hs76_mincon.out');
+dqscreen('on');
+dqprint('hs76_mincon.out');
 
 hs76.spc = which('hs76.spc');
-dqSpec (hs76.spc);
-dqSetInt ('Major Iteration limit', 250);
+dqspec(hs76.spc);
+dqsetint('Major Iteration limit', 250);
 
 
 % Set up the problem
@@ -53,10 +53,11 @@ xl = zeros(n,1);
 xu = [];
 
 % Solve the problem.
-[x,obj,INFO,output,lambda] = dqSolve( H, f, A, b, Aeq, beq, xl, xu, x0 );
+options.name = 'hs76';
+[x,obj,INFO,lambda,output] = dqsolve(H, f, A, b, Aeq, beq, xl, xu, x0, options);
 
-dqPrint ('off');
-dqScreen ('off');
-dqEnd;
+dqprint('off');
+dqscreen('off');
+dqend;
 
 

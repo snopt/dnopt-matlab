@@ -2,7 +2,7 @@ function hs13_mincon
 % Matlab example problem
 % This example calls dnsolve, which is based on fmincon.
 %
-%   HS 13 (modified so CQ holds)
+%   HS 13(modified so CQ holds)
 %     Minimize       x(1)   + x(2)
 %     subject to    -x(1)^3 + x(2) <= 0
 %
@@ -12,12 +12,12 @@ function hs13_mincon
 % Add path to DNOPT matlab files
 addpath([pwd,'/../../'], '-end');
 
-dnScreen ('on');
-dnPrint('hs13_mincon.out');
+dnscreen('on');
+dnprint('hs13_mincon.out');
 
 hs13.spc = which('hs13.spc');
-dnSpec (hs13.spc);
-dnSetInt ('Major Iteration limit', 250);
+dnspec(hs13.spc);
+dnsetint('Major Iteration limit', 250);
 
 
 % Set up the problem.
@@ -30,27 +30,24 @@ A   = []; b   = [];
 Aeq = []; beq = [];
 
 % Options output function.
-options.OutputFcn = @stopFun;
+options.name = 'hs13min';
+options.stop = @stopFun;
 
 % Solve the problem.
-[x,obj,INFO,output,lambda] = dnSolve('hs13obj_mincon', x, A, b, Aeq, beq, xl, ...
+[x,obj,INFO,output,lambda] = dnsolve(@hs13obj, x, A, b, Aeq, beq, xl, ...
 				     xu, @hs13con_mincon, options );
 
-dnPrint ('off');
-dnScreen ('off');
-dnEnd;
+dnprint('off');
+dnscreen('off');
+dnend;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  hs13obj_mincon is in the file hs13obj_mincon.m since the
-%  argument passed to dnSolve is a string, not the function
-%  handle.
-%
-% function [f,g] = hs13obj_mincon(x)
-%
-% % Compute objective and its gradient
-% f = x(1) + x(2);
-% g = [ 1; 1 ];
+function [f,g] = hs13obj(x)
+
+% Compute objective and its gradient
+f = x(1) + x(2);
+g = [ 1; 1 ];
 
 
 function [c,ceq,G,Geq] = hs13con_mincon(x)

@@ -13,13 +13,13 @@ function dntoy_mincon
 %
 
 
-dnScreen ('on');
-dnPrint('dntoy.out');
+dnscreen('on');
+dnprint('dntoy.out');
 
 dntoy.spc = which('dntoy.spc');
-dnSpec (dntoy.spc);
+dnspec(dntoy.spc);
 
-dnSetInt ('Major Iteration limit', 250);
+dnsetint('Major Iteration limit', 250);
 
 % Set up the problem.
 x  = ones(4,1);
@@ -34,19 +34,19 @@ Aeq = [];  beq = [];
 A  = [ 0 -4 -2 0 ];  b  = [ 0 ];
 
 % Solve the problem.
-[x,obj,INFO,output,lambda] = dnSolve( @dntoyobj_mincon, x, A, b, Aeq, beq, ...
-				      xl, xu, @dntoycon_mincon );
+[x,obj,INFO,output,lambda] = dnsolve(@dntoyobj_mincon, x, A, b, Aeq, beq, ...
+				     xl, xu, @dntoycon_mincon);
 
-dnPrint ('off');
-dnScreen ('off');
-dnEnd;
+dnprint('off');
+dnscreen('off');
+dnend;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [f,g] = dntoyobj_mincon(x)
 
 % Compute the objective and its gradient
-f = 3*x(1) + (x(1) + x(2) + x(3))^2 + 5*x(4);
+f = 3*x(1) +(x(1) + x(2) + x(3))^2 + 5*x(4);
 
 g = [ 3 + 2*(x(1) + x(2) + x(3));
       2*(x(1) + x(2) + x(3));

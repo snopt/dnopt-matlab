@@ -23,12 +23,12 @@ function lpmain_mincon
 % Add path to DQOPT matlab files
 addpath([pwd,'/../../'], '-end');
 
-dqScreen ('on');
-dqPrint('lpmain_mincon.out');
+dqscreen('on');
+dqprint('lpmain_mincon.out');
 
 lpmain.spc = which('lpmain.spc');
-dqSpec (lpmain.spc);
-dqSetInt ('Major Iteration limit', 250);
+dqspec(lpmain.spc);
+dqsetint('Major Iteration limit', 250);
 
 
 % Set up the problem
@@ -63,10 +63,10 @@ xl = zeros(n,1);
 xu = [];
 
 % Solve the problem.
-[x,obj,INFO,output,lambda] = dqSolve( H, f, A, b, Aeq, beq, xl, xu, x0 );
+[x,obj,INFO,lambda,output] = dqsolve( H, f, A, b, Aeq, beq, xl, xu, x0 );
 
-dqPrint ('off');
-dqScreen ('off');
-dqEnd;
+dqprint('off');
+dqscreen('off');
+dqend;
 
 

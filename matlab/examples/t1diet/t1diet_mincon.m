@@ -19,11 +19,11 @@ function t1diet_mincon
 %           (   2   12   54  285   22   80 )       (  800 )
 %
 
-dnScreen ('on');
-dnPrint('t1diet.out');
+dnscreen ('on');
+dnprint('t1diet.out');
 
 t1diet.spc = which('t1diet.spc');
-dnSpec ( t1diet.spc );
+dnspec( t1diet.spc );
 
 % Set up problem.
 n  = 6;
@@ -46,16 +46,16 @@ b = [ -2000; -55; -800];
 Aeq = []; beq = [];
 
 
-% Set OutputFcn function
-options.OutputFcn = @stopFun;
+% Set stop function
+options.stopFun = @stopFun;
 
 % Solve the problem.
-[x,obj,INFO] = dnSolve (@t1dietobj_mincon, x, A, b, Aeq, beq, xl, xu, ...
-			@t1dietcon_mincon, options );
+[x,obj,INFO] = dnsolve(@t1dietobj_mincon, x, A, b, Aeq, beq, xl, xu, ...
+		       @t1dietcon_mincon, options );
 
-dnPrint ('off');
-dnScreen ('off');
-dnEnd;
+dnprint('off');
+dnscreen('off');
+dnend;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

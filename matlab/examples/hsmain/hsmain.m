@@ -9,11 +9,11 @@ function hsmain
 %                              x(2)   - x(3)^2  + x(4)         = 1
 %                  x(1)*x(5)                                   = 1
 
-dnScreen ('on');
-dnPrint('hsmain.out');
+dnscreen('on');
+dnprint('hsmain.out');
 
 hsmain.spc = which('hsmain.spc');
-dnSpec (hsmain.spc);
+dnspec(hsmain.spc);
 
 % Set up the problem.
 n = 5;
@@ -41,19 +41,20 @@ cl = [ 3; 1; 1; ];
 cu = [ 3; 1; 1; ];
 
 % Solve the problem.
-[x,obj,INFO,output,lambda] = dnopt( 'hsmain', @hsmainobj, x, xl, xu, A, al, au, ...
-				    @hsmaincon, cl, cu );
+options.name = 'hsmain';
+[x,obj,INFO,output,lambda] = dnopt(@hsmainobj, x, xl, xu, A, al, au, ...
+				   @hsmaincon, cl, cu, options );
 
-dnPrint ('off');
-dnScreen ('off');
-dnEnd;
+dnprint('off');
+dnscreen('off');
+dnend;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [f,g] = hsmainobj(x)
 
-f = (x(1)-x(2))^2 + (x(2)-x(3))^3 + (x(3)-x(4))^4;
+f =(x(1)-x(2))^2 +(x(2)-x(3))^3 +(x(3)-x(4))^4;
 g = [  2*(x(1)-x(2));
       -2*(x(1)-x(2)) + 3*(x(2)-x(3))^2;
       -3*(x(2)-x(3))^2 + 4*(x(3)-x(4))^3;
