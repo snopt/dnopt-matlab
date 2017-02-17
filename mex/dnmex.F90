@@ -52,7 +52,7 @@ module mxdnWork
                         dnEnd      = 999
 
   public :: resetWork, deallocI, deallocR, deallocR2, checkCol, checkRow
-  public :: copyMxArrayR, copyMxArrayR2, copyMxArrayI
+  public :: copyMxArrayR, copyMxArrayI
 
 contains
 
@@ -183,6 +183,8 @@ contains
     mwSize    :: dim
     integer*4 :: mxIsEmpty
 
+    if (n <= 0) return
+
     if (mxIsEmpty(mxarray) > 0) then
        array(1:n) = defval
     else
@@ -210,6 +212,8 @@ contains
     mwSize           :: dim
     integer*4        :: mxIsEmpty
     double precision :: tarray(n)
+
+    if (n <= 0) return
 
     if (mxIsEmpty(mxarray) > 0) then
        array(1:n) = defval
