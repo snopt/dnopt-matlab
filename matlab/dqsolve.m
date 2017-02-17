@@ -125,7 +125,7 @@ elseif nargin == 10,
   x0  = varargin{7};
 
   % Deal with options.
-  optionsLoc = 8;
+  optionsLoc = 10;
   if isstruct(varargin{optionsLoc}),
     options = varargin{optionsLoc};
     % Name
