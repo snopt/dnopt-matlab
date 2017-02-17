@@ -13,6 +13,10 @@ addpath([pwd,'/examples/lpmain'],'-end');
 dnscreen on;
 
 fprintf('\n=============================================================');
+fprintf('\n hsmain: Solving t1diet using dnopt ...\n');
+t1diet_dnopt;
+
+fprintf('\n=============================================================');
 fprintf('\n hsmain: Solving hs13 using dnopt ...\n');
 hs13;
 

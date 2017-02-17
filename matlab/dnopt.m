@@ -11,16 +11,22 @@ function [x,fval,exitFlag,output,lambda,states] = ...
 %  Calling sequences:
 %  [] = dnopt(obj, x, xl, xu )
 %  [] = dnopt(obj, x, xl, xu, options )
+%
 %  [] = dnopt(obj, x, xl, xu, states, lambda )
 %  [] = dnopt(obj, x, xl, xu, states, lambda, options)
+%
 %  [] = dnopt(obj, x, xl, xu, A, al, au)
 %  [] = dnopt(obj, x, xl, xu, A, al, au, options)
+%
 %  [] = dnopt(obj, x, xl, xu, A, al, au, states, lambda)
 %  [] = dnopt(obj, x, xl, xu, A, al, au, states, lambda, options)
+%
 %  [] = dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu)
 %  [] = dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, options)
+%
 %  [] = dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, states, lambda)
 %  [] = dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, states, lambda, options)
+%
 %
 %  [x,fval,exitFlag]                      = dnopt(...)
 %  [x,fval,exitFlag,output]               = dnopt(...)
@@ -95,29 +101,19 @@ stopFun    = 0;
 optionsLoc = 0;
 
 % Check objFun
-if(ischar(obj))
-  objFun = str2func(obj);
-elseif isa(obj,'function_handle'),
-  objFun = obj;
-else
-  error('DNOPT:InputArgs','obj should be a function handle or string');
-end
-
-nargobj = nargout(objFun);
-if abs(nargobj) ~= 1 && abs(nargobj) ~= 2,
-  error('DNOPT:InputArgs','objFun should return 1 or 2 arguments');
-end
+objFun = checkFun(obj,'DNOPT',[1 2]);
 
 
 % Check derivative settings.  Is objective gradient provided?
-derSet = dnget('Derivative level');
-setDer = derSet < 0 || derSet > 3;
+derSet  = dnget('Derivative level');
+setDer  = derSet < 0 || derSet > 3;
+nargobj = nargout(obj);
 if nargobj == 2,
   lvlDer = 1;
 elseif nargobj == 1,
   lvlDer = 0;
 else
-  error('DNOPT:InputArgs','Wrong number of output arguments for obj function');
+  error('DNOPT:InputArgs','Wrong number of output arguments for %s',inputname(obj));
 end
 
 
@@ -127,6 +123,7 @@ if nargin == 5 || nargin == 7 || nargin == 8 || nargin == 10 || ...
   optionsLoc = nargin - 4;
   if isstruct(varargin{optionsLoc}),
     options = varargin{optionsLoc};
+
     % Name
     if isfield(options,'name'),
       probName = options.name;
@@ -134,17 +131,21 @@ if nargin == 5 || nargin == 7 || nargin == 8 || nargin == 10 || ...
 
     % Start
     if isfield(options,'start'),
-      if strcmp(options.start,'Warm'),
-	istart = 1;
+      if strcmp(lower(options.start),'warm'),
+	istart = 2;
+      elseif strcmp(lower(options.start),'hot'),
+	istart = 3;
       end
     end
 
     % Stop function
     if isfield(options,'stop'),
-      if(ischar(options.stop))
+      if ischar(options.stop),
 	stopFun = str2func(options.stop);
-      else
+      elseif isa(options.stop,'function_handle'),
 	stopFun = options.stop;
+      else
+	error('DNOPT:InputArgs','%s.stop should be a string or function handle',inputname(options));
       end
     end
   else
@@ -267,7 +268,7 @@ elseif nargin == 10 || nargin == 11,
   cstate = []; cmul   = [];
 
   % Check nonlcon
-  [nonlcon,c,J,nnCon] = checkCon(nonlc,x0,lvlDer,n);
+  [nonlcon,c,J,nnCon,lvlDer] = checkCon(nonlc,x0,lvlDer,n);
 
   if setDer,
     dnset(['Derivative level ' num2str(lvlDer)]);
@@ -322,7 +323,7 @@ elseif nargin == 12 || nargin == 13,
   end
 
   % Check nonlcon
-  [nonlcon,c,J,nnCon] = checkCon(nonlc,x0,lvlDer,n);
+  [nonlcon,c,J,nnCon,lvlDer] = checkCon(nonlc,x0,lvlDer,n);
 
   if setDer,
     dnset(['Derivative level ' num2str(lvlDer)]);
@@ -365,17 +366,12 @@ output.funcCount  = nEval;
 
 
 
-function [nonlcon,c,J,nnCon] = checkCon(nonlc,x0,lvlDer,n)
+function [nonlcon,c,J,nnCon,lvlDer] = checkCon(nonlc,x0,lvlDer,n)
 % Check nonlcon has the right number of input arguments
 % and the output has the right dimensions
 %
-if ischar(nonlc),
-  nonlcon = str2func(nonlc);
-elseif isa(nonlc,'function_handle'),
-  nonlcon = nonlc;
-else
-  error('DNOPT:InputArgs','nonlcon should be a function handle or string');
-end
+
+nonlcon = checkFun(nonlc,'DNOPT');
 
 narg = nargout(nonlcon);
 if narg == 2,
@@ -384,16 +380,18 @@ if narg == 2,
   J      = J';
 
   if nnCon ~= size(J,1),
-    error('DNOPT:InputArgs','Size of J in nonlcon is incorrect');
+    error('DNOPT:InputArgs','Size of J in %s is incorrect',inputname(nonlc));
   end
 
   lvlDer = lvlDer + 2;
+
 elseif narg == 1,
   [c]     = nonlcon(x0);
   nnCon  = size(c,1);
   J       = zeros(nnCon,n);
+
 else
-  error('DNOPT:InputArgs','Wrong number of output arguments for nonlcon function');
+  error('DNOPT:InputArgs','Wrong number of output arguments for %s',inputname(nonlc));
 end
 
 if nnCon == 0,

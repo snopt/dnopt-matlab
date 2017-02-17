@@ -22,9 +22,7 @@ function [x,fval,exitFlag,output,lambda,states] = dqopt(H, c, varargin)
 %  [] = dqopt(H, c, x0, xl, xu, A, al, au, states, lambda)
 %  [] = dqopt(H, c, x0, xl, xu, A, al, au, states, lambda, options)
 %
-%  [x,fval,exitFlag]               = dqopt(H, c, ...)
-%  [x,fval,exitFlag,lambda]        = dqopt(H, c, ...)
-%  [x,fval,exitFlag,lambda,output] = dqopt(H, c, ...)
+%  [x,fval,exitFlag,output,lambda,states] = dqopt(H, c, ...)
 %
 %   INPUT:
 %     H        is the Hessian matrix of the objective
@@ -74,9 +72,10 @@ istart   = 0;
 % Deal with options.
 optionsLoc = 0;
 if nargin == 3 || nargin == 6 || nargin == 8 || nargin == 9 || nargin == 11,
-  optionsLoc = nargin - 3;
+  optionsLoc = nargin - 2;
   if isstruct(varargin{optionsLoc}),
     options = varargin{optionsLoc};
+
     % Name
     if isfield(options,'name'),
       probName = options.name;
@@ -84,10 +83,13 @@ if nargin == 3 || nargin == 6 || nargin == 8 || nargin == 9 || nargin == 11,
 
     % Start
     if isfield(options,'start'),
-      if strcmp(options.start,'Warm'),
-	istart = 1;
+      if strcmp(lower(options.start),'warm'),
+	istart = 2;
+      elseif strcmp(lower(options.start),'hot'),
+	istart = 3;
       end
     end
+
   else
     optionsLoc = 0;
   end

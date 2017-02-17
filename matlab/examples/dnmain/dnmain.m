@@ -74,28 +74,33 @@ al = zeros(nA,1);
 au = Inf*ones(nA,1);
 
 % Nonlinear constraints
-%    x_1^2 + x_6^2                      <= 1
+%    x_1^2 + x_6^2                    <= 1
 %  (x_2   - x_1)^2  + (x_7 - x_6)^2   <= 1
-%  (x_3   - x_1)^2  +   x_6^2          <= 1
+%  (x_3   - x_1)^2  +   x_6^2         <= 1
 %  (x_1   - x_4)^2  + (x_6 - x_8)^2   <= 1
 %  (x_1   - x_5)^2  + (x_6 - x_9)^2   <= 1
-%    x_2^2 + x_7^2                      <= 1
-%  (x_3   - x_2)^2  +   x_7^2          <= 1
+%    x_2^2 + x_7^2                    <= 1
+%  (x_3   - x_2)^2  +   x_7^2         <= 1
 %  (x_4   - x_2)^2  + (x_8 - x_7)^2   <= 1
 %  (x_2   - x_5)^2  + (x_7 - x_9)^2   <= 1
-%  (x_4   - x_3)^2  +   x_8^2          <= 1
-%  (x_5   - x_3)^2  +   x_9^2          <= 1
-%    x_4^2 +  x_8^2                     <= 1
+%  (x_4   - x_3)^2  +   x_8^2         <= 1
+%  (x_5   - x_3)^2  +   x_9^2         <= 1
+%    x_4^2 +  x_8^2                   <= 1
 %  (x_4   - x_5)^2 +(x_9 - x_8)^2     <= 1
-%    x_5^2 + x_9^2                      <= 1
+%    x_5^2 + x_9^2                    <= 1
 nC = 14;
 cl = -Inf*ones(nC,1);
 cu =      ones(nC,1);
 
 % Solve the problem.
 options.name = 'dnmain';
+[x,F,INFO,output,lambda,states] = dnopt('dnmainobj', x, xlow, xupp, A, al, au, ...
+					@dnmaincon, cl, cu, options);
+
+% Do a warm start and input the solution:
+options.start = 'Warm';
 [x,F,INFO] = dnopt('dnmainobj', x, xlow, xupp, A, al, au, ...
-		   @dnmaincon, cl, cu, options);
+		   @dnmaincon, cl, cu, states, lambda, options);
 
 dnprint('off');
 dnscreen('off');

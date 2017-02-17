@@ -87,29 +87,19 @@ stopFun    = 0;
 optionsLoc = 0;
 
 % Check obj
-if ischar(obj),
-  objFun = str2func(obj);
-elseif isa(obj,'function_handle'),
-  objFun = obj;
-else
-  error('DNOPT:InputArgs','obj should be a function handle or string');
-end
-
-nargobj = nargout(objFun);
-if abs(nargobj) ~= 1 && abs(nargobj) ~= 2,
-  error('DNOPT:InputArgs','obj should return 1 or 2 arguments');
-end
+objFun = checkFun(obj,'DNOPT',[1 2]);
 
 
 % Check derivative settings.  Is objective gradient provided?
-derSet = dnget('Derivative level');
-setDer = derSet < 0 || derSet > 3;
+derSet  = dnget('Derivative level');
+setDer  = derSet < 0 || derSet > 3;
+nargobj = nargout(obj);
 if nargobj == 2,
   lvlDer = 1;
 elseif nargobj == 1,
   lvlDer = 0;
 else
-  error('DNOPT:InputArgs','Wrong number of output arguments for obj function');
+  error('DNOPT:InputArgs','Wrong number of output arguments for %s',inputname(obj));
 end
 
 % Deal with options
@@ -125,17 +115,21 @@ if nargin == 5 || nargin == 7 || nargin == 9 || nargin == 10,
 
     % Start
     if isfield(options,'start'),
-      if strcmp(options.start,'Warm'),
-	istart = 1;
+      if strcmp(lower(options.start),'warm'),
+	istart = 2;
+      elseif strcmp(lower(options.start),'hot'),
+	istart = 3;
       end
     end
 
     % Stop function
     if isfield(options,'stop'),
-      if(ischar(options.stop))
+      if ischar(options.stop),
 	stopFun = str2func(options.stop);
-      else
+      elseif isa(options.stop,'function_handle'),
 	stopFun = options.stop;
+      else
+	error('DNOPT:InputArgs','%s.stop should be a string or function handle',inputname(options));
       end
     end
   else
@@ -216,13 +210,7 @@ elseif nargin == 9 || nargin == 10,
   nonlc     = varargin{5};
   linear_eq = size(Aeq,1);
 
-  if ischar(nonlc),
-    nonlcon = str2func(nonlc);
-  elseif isa(nonlc,'function_handle'),
-    nonlcon = nonlc;
-  else
-    error('DNOPT:InputArgs','nonlcon should be a function handle or a string');
-  end
+  nonlcon = checkFun(nonlc,'DNOPT');
 
   % Check if Jacobian for nonlinear constraints are provided.
   narg = nargout(nonlcon);
@@ -241,7 +229,7 @@ elseif nargin == 9 || nargin == 10,
 
     J = ones(nonlin_ineq,n); Jeq = ones(nonlin_eq,n);
   else
-    error('DNOPT:InputArgs','Wrong number of output arguments for nonlcon function');
+    error('DNOPT:InputArgs','Wrong number of output arguments for %s',inputname(nonlc));
   end
 
   if setDer,
@@ -263,7 +251,7 @@ elseif nargin == 9 || nargin == 10,
 						  cl, cu, [], [], JJ);
 
 else
-  error('Wrong number of input arguments for dnsolve');
+  error('DNOPT:InputArgs','Wrong number of input arguments for dnsolve');
 end
 
 % Set output
@@ -319,6 +307,6 @@ elseif nargout(nonlcon) == 2,
   cc = [c; ceq];
   JJ = [];
 else
-  error('DNOPT:InputArgs',['nonlcon should have 2 or 4 output arguments, not' ...
-		    ' %d', nargout(nonlcon)]);
+  error('DNOPT:InputArgs',['%s should have 2 or 4 output arguments, not' ...
+		    ' %d', inputname(nonlcon),nargout(nonlcon)]);
 end

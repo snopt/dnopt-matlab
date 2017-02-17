@@ -135,8 +135,10 @@ elseif nargin == 10,
 
     % Start
     if isfield(options,'start'),
-      if strcmp(options.start,'Warm'),
-	istart = 1;
+      if strcmp(lower(options.start),'warm'),
+	istart = 2;
+      elseif strcmp(lower(options.start),'hot'),
+	istart = 3;
       end
     end
 

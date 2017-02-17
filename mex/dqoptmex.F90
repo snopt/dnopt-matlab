@@ -9,7 +9,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 subroutine mexFunction(nlhs, plhs, nrhs, prhs)
-  use mxdnWork
+  use mxQP
   implicit none
 
   integer*4  :: nlhs, nrhs
@@ -56,7 +56,7 @@ subroutine mexFunction(nlhs, plhs, nrhs, prhs)
   iOpt = rOpt
 
   ! Register exit function
-  call mexAtExit(resetDNOPT)
+  call mexAtExit(resetDQOPT)
 
   ! Files
   if (iOpt == dnOpenP) then
@@ -179,7 +179,7 @@ subroutine mexFunction(nlhs, plhs, nrhs, prhs)
 
   else if (iOpt == dnEnd) then
 
-     call resetDNOPT
+     call resetDQOPT
 
   end if
 
@@ -190,9 +190,9 @@ end subroutine mexFunction
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
-  use mxdnWork
-
+  use mxQP
   implicit none
+
   integer*4  :: nlhs, nrhs
   mwPointer  :: prhs(*), plhs(*)
   !---------------------------------------------------------------------
@@ -209,11 +209,10 @@ subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
   integer*4        :: mxIsChar, mxIsClass
   double precision :: mxGetScalar
 
-  ! DNOPT
   character*8      :: probName, Names(1)
   integer          :: Errors, i1, i2, info, j
   integer          :: Start, iObj, ldA, ldH, m, &
-                      mincw, miniw, minrw, nb, ncObj, nInf, &
+                      mincw, miniw, minrw, n, nb, ncObj, nInf, &
                       nleq, nlin, nNames, nnH
   double precision :: rtmp, Obj, ObjAdd, sInf
   external         :: dqoptKernel, dqSetInt, dqLog, matlabHx
@@ -236,9 +235,9 @@ subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
   !-----------------------------------------------------------------------------
   ! Problem name
   !-----------------------------------------------------------------------------
-  probName = ''
   if (mxIsChar(prhs(3)) /= 1) &
-       call mexErrMsgIdAndTxt('DNOPT:InputArg','Wrong input type for problem name')
+       call mexErrMsgIdAndTxt('DQOPT:InputArg','Wrong input type for problem name')
+  probName = '        '
   dimx = min(8,mxGetN(prhs(3)))
   call mxGetString(prhs(3), probName, dimx)
 
@@ -284,19 +283,15 @@ subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
   ! Set bounds on variables and constraints
   ! Get initial states
   !-----------------------------------------------------------------------------
-  ! Lower and upper bounds on x
-  call copyMxArrayR('xl', n, prhs(7), bl(1:n), -infBnd)
-  call copyMxArrayR('xu', n, prhs(8), bu(1:n),  infBnd)
-
-  ! Initial states and multipliers
+  call copyMxArrayR('xl',     n, prhs(7), bl(1:n), -infBnd)
+  call copyMxArrayR('xu',     n, prhs(8), bu(1:n),  infBnd)
   call copyMxArrayI('xstate', n, prhs(9), state(1:n), izero)
-  call copyMxArrayR('xmul', n, prhs(10), y(1:n), zero)
+  call copyMxArrayR('xmul',   n, prhs(10), y(1:n), zero)
 
 
   !-----------------------------------------------------------------------------
-  ! Constraint bounds
+  ! Linear constraints
   !-----------------------------------------------------------------------------
-  ! Linear constraint bounds
   if (m > 0) then
      call checkCol(prhs(11), n, 'A')
      ldA  = m
@@ -306,15 +301,10 @@ subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
      i1 = 1+n
      i2 = m+n
 
-     ! Lower and upper bounds on Ax
-     call copyMxArrayR('al', m, prhs(12), bl(i1:i2), -infBnd)
-     call copyMxArrayR('au', m, prhs(13), bu(i1:i2),  infBnd)
-
-     ! Initial x states
+     call copyMxArrayR('al',     m, prhs(12), bl(i1:i2), -infBnd)
+     call copyMxArrayR('au',     m, prhs(13), bu(i1:i2),  infBnd)
      call copyMxArrayI('astate', m, prhs(14), state(i1:i2), izero)
-
-     ! Initial multipliers
-     call copyMxArrayR('amul', m, prhs(15), y(i1:i2), zero)
+     call copyMxArrayR('amul',   m, prhs(15), y(i1:i2), zero)
   else
      ldA = 1
   end if
@@ -400,8 +390,8 @@ subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
      dimx = n+m
      dimy = 1
      plhs(6) = mxCreateDoubleMatrix(dimx, dimy, mxREAL)
-     !     call mxCopyInteger4ToPtr(state(1:n+m), mxGetPr(plhs(6)), dimx)
-     call mxCopyReal8ToPtr(state(1:n+m), mxGetPr(plhs(6)), dimx)
+     !call mxCopyInteger4ToPtr(state(1:n+m), mxGetPr(plhs(6)), dimx)
+     call mxCopyReal8ToPtr(dble(state(1:n+m)), mxGetPr(plhs(6)), dimx)
   end if
 
   ! Deallocate memory
@@ -412,7 +402,7 @@ end subroutine dqmxSolve
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 subroutine dqmxOptions(iOpt, nlhs, plhs, nrhs, prhs)
-  use mxdnWork
+  use mxQP
   implicit none
 
   integer    :: iOpt
@@ -513,9 +503,9 @@ end subroutine dqmxOptions
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 subroutine dqmxSpecs(nlhs, plhs, nrhs, prhs)
-  use mxdnWork
-
+  use mxQP
   implicit none
+
   integer*4  :: nlhs, nrhs
   mwPointer  :: prhs(*), plhs(*)
   !---------------------------------------------------------------------

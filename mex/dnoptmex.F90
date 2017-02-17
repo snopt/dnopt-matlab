@@ -9,7 +9,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 subroutine mexFunction(nlhs, plhs, nrhs, prhs)
-  use mxdnWork
+  use mxNLP
   implicit none
 
   integer*4  :: nlhs, nrhs
@@ -45,7 +45,7 @@ subroutine mexFunction(nlhs, plhs, nrhs, prhs)
 
   ! DNOPT
   character        :: filename*80
-  integer          :: info, iOpt, strlen
+  integer          :: iOpt, strlen
   double precision :: rOpt, rleniw, rlenrw
   external         :: dnBegin
 
@@ -156,7 +156,7 @@ subroutine mexFunction(nlhs, plhs, nrhs, prhs)
   if      (iOpt == dnSolve) then
 
      callType = userCall
-     call dnmxSolve(nlhs, plhs, nrhs, prhs, iOpt)
+     call dnmxSolve(nlhs, plhs, nrhs, prhs)
      callType = systemCall
 
   else if (iOpt == dnSetXX .or. &
@@ -189,13 +189,12 @@ end subroutine mexFunction
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-subroutine dnmxSolve(nlhs, plhs, nrhs, prhs, iOpt)
-  use mxdnWork
+subroutine dnmxSolve(nlhs, plhs, nrhs, prhs)
+  use mxNLP
   implicit none
 
   integer*4  :: nlhs, nrhs
   mwPointer  :: prhs(*), plhs(*)
-  integer    :: iOpt
 
   !---------------------------------------------------------------------
   ! Solve the problem
@@ -289,10 +288,10 @@ subroutine dnmxSolve(nlhs, plhs, nrhs, prhs, iOpt)
   !-----------------------------------------------------------------------------
   ! Problem name
   !-----------------------------------------------------------------------------
-  probName = ''
   if (mxIsChar(prhs(4)) /= 1) &
        call mexErrMsgIdAndTxt('DNOPT:InputArg','Wrong input type for problem name')
 
+  probName = '        '
   dimx = min(8,mxGetN(prhs(4)))
   call mxGetString(prhs(4), probName, dimx)
 
@@ -502,8 +501,8 @@ subroutine dnmxSolve(nlhs, plhs, nrhs, prhs, iOpt)
      dimx = n+m
      dimy = 1
      plhs(7) = mxCreateDoubleMatrix(dimx, dimy, mxREAL)
-     !     call mxCopyInteger4ToPtr(state(1:n+m), mxGetPr(plhs(7)), dimx)
-     call mxCopyReal8ToPtr(state(1:n+m), mxGetPr(plhs(7)), dimx)
+     !call mxCopyInteger4ToPtr(state(1:n+m), mxGetPr(plhs(7)), dimx)
+     call mxCopyReal8ToPtr(dble(state(1:n+m)), mxGetPr(plhs(7)), dimx)
   end if
 
 
@@ -515,9 +514,9 @@ end subroutine dnmxSolve
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 subroutine dnmxOptions (iOpt, nlhs, plhs, nrhs, prhs)
-  use mxdnWork
-
+  use mxNLP
   implicit none
+
   integer    :: iOpt
   integer*4  :: nlhs, nrhs
   mwPointer  :: prhs(*), plhs(*)
@@ -619,7 +618,7 @@ end subroutine dnmxOptions
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 subroutine dnmxSpecs(nlhs, plhs, nrhs, prhs)
-  use mxdnWork
+  use mxNLP
   implicit none
 
   integer*4  :: nlhs, nrhs
@@ -678,7 +677,8 @@ end subroutine dnmxSpecs
 
 subroutine matlabObj(mode, nnObj, x, fObj, gObj, Status, &
                       cu, lencu, iu, leniu, ru, lenru)
-  use mxdnWork, only : objHandle, mxREAL
+  use mxdnWork, only : mxREAL
+  use mxNLP,    only : objHandle
   implicit none
 
   integer          :: mode, nnObj, Status, lencu, leniu, lenru, &
@@ -732,7 +732,8 @@ end subroutine matlabObj
 
 subroutine matlabCon(mode, nnCon, nnJac, x, fCon, Jcon, ldJ, Status, &
                      cu, lencu, iu, leniu, ru, lenru)
-  use mxdnWork, only : n, conHandle, mxREAL
+  use mxdnWork, only : mxREAL
+  use mxnLP,    only : n, conHandle
   implicit none
 
   integer          :: mode, nnCon, nnJac, ldJ, Status, &

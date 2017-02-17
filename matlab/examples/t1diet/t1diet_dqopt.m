@@ -1,4 +1,4 @@
-function t1diet
+function t1diet_dqopt
 % Matlab example problem
 %   Diet LP problem of Chvatal, 1983.
 %
@@ -18,11 +18,11 @@ function t1diet
 %           (   2   12   54  285   22   80 )        (  800 )
 %
 
-dnscreen('on');
-dnprint('t1diet.out');
+dqscreen('on');
+dqprint('t1diet.out');
 
 t1diet.spc = which('t1diet.spc');
-dnspec(t1diet.spc);
+dqspec(t1diet.spc);
 
 % Set up problem.
 n  = 6;
@@ -40,28 +40,20 @@ A  = [ 110  205  160  160  420  260;
          4   32   13    8    4   14;
          2   12   54  285   22   80 ];
 al = [ 2000; 55; 800];
-au = [ Inf; Inf; Inf];
 
+% Objective term
+c = [   3   24   13    9   20   19  ]';
 
 % Solve the problem.
 options.name  = 't1diet';
 options.start = 'Cold';
-[x,obj,INFO, output, lambda, states] = dnopt(@t1dietobj, x, xl, ...
-					     xu, A, al, au, options);
+
+[x,obj,INFO,output,lambda,states] = dqopt([], c, x, xl, xu, A, al, [], options);
 
 options.start = 'Warm';
-[x,obj,INFO] = dnopt(@t1dietobj, x, xl, xu, A, al, au, states, ...
+[x,obj,INFO] = dqopt([], c, x, xl, xu, A, al, [], states, ...
 		     lambda, options);
 
-dnprint('off');
-dnscreen('off');
-dnend;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [f,g] = t1dietobj(x)
-
-% Compute objective and gradient.
-c = [   3   24   13    9   20   19  ]';
-f = c'*x;
-g = c;
+dqprint('off');
+dqscreen('off');
+dqend;

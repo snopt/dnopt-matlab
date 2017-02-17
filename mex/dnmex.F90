@@ -6,6 +6,8 @@
 
 #include "fintrf.h"
 
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 module mxdnWork
 
   ! DNOPT workspace
@@ -18,8 +20,7 @@ module mxdnWork
   integer*4, parameter :: mxREAL = 0
 
   ! For mex callback functions
-  mwPointer          :: objHandle, conHandle, stopHandle
-  integer            :: n
+  mwPointer          :: stopHandle
 
   ! DNOPT mex variables
   logical            :: firstCall = .true.,  &
@@ -49,30 +50,17 @@ module mxdnWork
                         dnscrnON   = 15, &
                         dnscrnOff  = 16, &
                         dnEnd      = 999
-  ! DNOPT arrays
-  integer,          allocatable :: state(:)
-  double precision, allocatable :: x(:), bl(:), bu(:), y(:), &
-                                   H(:,:), A(:,:), Jcon(:,:), &
-                                   fCon(:), gObj(:)
 
-  ! DQOPT arrays
-  integer,          allocatable :: Etype(:)
-  double precision, allocatable :: cObj(:)
-
-  public  :: resetDNOPT, allocDNOPT, deallocDNOPT, &
-             allocDQOPT, deallocDQOPT, &
-             checkCol, checkRow
-  private :: deallocI, deallocR, deallocR2
+  public :: resetWork, deallocI, deallocR, deallocR2, checkCol, checkRow
+  public :: copyMxArrayR, copyMxArrayR2, copyMxArrayI
 
 contains
 
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  subroutine resetDNOPT()
+  subroutine resetWork
     !---------------------------------------------------------------------------
-    ! resetDNOPT for new problem.
-    ! Reset variables, deallocate all arrays.
-    ! (Also registered with mexAtExit to deallocate workspace and close files)
+    ! Reset workspace, output for new problem.
     !---------------------------------------------------------------------------
 
     !    if (printOpen) close(iPrint)
@@ -92,9 +80,6 @@ contains
     lenrw     = 5000
     lencw     = 500
 
-    call deallocDQOPT()
-    call deallocDNOPT()
-
     if (allocated(cw)) deallocate(cw)
     if (allocated(iw)) deallocate(iw)
     if (allocated(rw)) deallocate(rw)
@@ -103,122 +88,7 @@ contains
     if (allocated(iw0)) deallocate(iw0)
     if (allocated(rw0)) deallocate(rw0)
 
-  end subroutine resetDNOPT
-
-  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  subroutine allocDNOPT(n, m, nlCon, nnCon)
-    integer, intent(in) :: n, m, nlCon, nnCon
-    !---------------------------------------------------------------------------
-    ! Allocate space for DNOPT solve.
-    !---------------------------------------------------------------------------
-
-    call deallocDNOPT()
-
-    allocate(state(n+m))
-    allocate(bl(n+m), bu(n+m), x(n+m), y(n+m))
-    allocate(gObj(n))
-    allocate(H(n,n))
-
-    if (nlCon > 0) then
-       allocate(A(nlCon,n))
-    else
-       allocate(A(1,n))
-    end if
-
-    if (nnCon > 0) then
-       allocate(Jcon(nnCon,n))
-       allocate(fCon(nnCon))
-    else
-       allocate(Jcon(1,1))
-       allocate(fCon(1))
-    end if
-
-  end subroutine allocDNOPT
-
-  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  subroutine deallocDNOPT()
-    !---------------------------------------------------------------------------
-    ! Deallocate x,F arrays involved in solve routine.
-    !---------------------------------------------------------------------------
-    if (objHandle  /= 0) call mxDestroyArray(objHandle)
-    if (conHandle  /= 0) call mxDestroyArray(conHandle)
-    if (stopHandle /= 0) call mxDestroyArray(stopHandle)
-
-    objHandle  = 0
-    conHandle  = 0
-    stopHandle = 0
-
-    call deallocI(state)
-
-    call deallocR(bl)
-    call deallocR(bu)
-    call deallocR(x)
-    call deallocR(y)
-
-    call deallocR2(A)
-    call deallocR2(Jcon)
-
-    call deallocR2(H)
-    call deallocR(fCon)
-    call deallocR(gObj)
-
-  end subroutine deallocDNOPT
-
-  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  subroutine allocDQOPT(n, m, nnH, ncObj)
-    integer, intent(in) :: n, m, nnH, ncObj
-    !---------------------------------------------------------------------------
-    ! Allocate space for DQOPT solve.
-    !---------------------------------------------------------------------------
-
-    call deallocDQOPT()
-
-    allocate(state(n+m),Etype(n+m))
-    allocate(bl(n+m), bu(n+m), x(n+m), y(n+m))
-
-    if (nnH > 0) then
-       allocate(H(nnH,nnH))
-    else
-       allocate(H(1,1))
-    end if
-
-    if (ncObj > 0) then
-       allocate(cObj(ncObj))
-    else
-       allocate(cObj(1))
-    end if
-
-    if (m > 0) then
-       allocate(A(m,n))
-    else
-       allocate(A(1,n))
-    end if
-
-  end subroutine allocDQOPT
-
-  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  subroutine deallocDQOPT()
-    !---------------------------------------------------------------------------
-    ! Deallocate arrays involved in solve routine.
-    !---------------------------------------------------------------------------
-
-    call deallocR(x)
-    call deallocR(y)
-    call deallocR(bl)
-    call deallocR(bu)
-    call deallocR(cObj)
-
-    call deallocI(state)
-    call deallocI(Etype)
-
-    call deallocR2(H)
-    call deallocR2(A)
-
-  end subroutine deallocDQOPT
+  end subroutine resetWork
 
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -336,9 +206,10 @@ contains
     ! If not empty, copy to real array.
     ! Else, set array to default value.
     !---------------------------------------------------------------------
-    mwPointer :: mxGetPr
-    mwSize    :: dim
-    integer*4 :: mxIsEmpty
+    mwPointer        :: mxGetPr
+    mwSize           :: dim
+    integer*4        :: mxIsEmpty
+    double precision :: tarray(n)
 
     if (mxIsEmpty(mxarray) > 0) then
        array(1:n) = defval
@@ -347,10 +218,193 @@ contains
        call checkCol(mxarray, 1, name)
 
        dim = n
-       call mxCopyPtrToInteger4(mxGetPr(mxarray), array(1:n), dim)
+       !call mxCopyPtrToInteger4(mxGetPr(mxarray), array(1:n), dim)
+       call mxCopyPtrToReal8(mxGetPr(mxarray), tarray(1:n), dim)
+       array(1:n) = int(tarray(1:n))
     end if
 
   end subroutine copyMxArrayI
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 end module mxdnWork
+
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+module mxNLP
+  use mxdnWork
+  implicit none
+  public
+
+  mwPointer          :: objHandle, conHandle
+  integer            :: n
+
+  ! DNOPT arrays
+  integer,          allocatable :: state(:)
+  double precision, allocatable :: x(:), bl(:), bu(:), y(:), &
+                                   H(:,:), A(:,:), Jcon(:,:), &
+                                   fCon(:), gObj(:)
+contains
+
+  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  subroutine resetDNOPT
+    !---------------------------------------------------------------------------
+    ! resetDNOPT for new problem.
+    ! (Also registered with mexAtExit to deallocate workspace and close files)
+    !---------------------------------------------------------------------------
+    call resetWork
+    call deallocDNOPT
+
+  end subroutine resetDNOPT
+
+  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  subroutine allocDNOPT(n, m, nlCon, nnCon)
+    integer, intent(in) :: n, m, nlCon, nnCon
+    !---------------------------------------------------------------------------
+    ! Allocate space for DNOPT solve.
+    !---------------------------------------------------------------------------
+
+    call deallocDNOPT
+
+    allocate(state(n+m))
+    allocate(bl(n+m), bu(n+m), x(n+m), y(n+m))
+    allocate(gObj(n))
+    allocate(H(n,n))
+
+    if (nlCon > 0) then
+       allocate(A(nlCon,n))
+    else
+       allocate(A(1,n))
+    end if
+
+    if (nnCon > 0) then
+       allocate(Jcon(nnCon,n))
+       allocate(fCon(nnCon))
+    else
+       allocate(Jcon(1,1))
+       allocate(fCon(1))
+    end if
+
+  end subroutine allocDNOPT
+
+  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  subroutine deallocDNOPT
+    !---------------------------------------------------------------------------
+    ! Deallocate x,F arrays involved in solve routine.
+    !---------------------------------------------------------------------------
+
+    if (objHandle  /= 0) call mxDestroyArray(objHandle)
+    if (conHandle  /= 0) call mxDestroyArray(conHandle)
+    if (stopHandle /= 0) call mxDestroyArray(stopHandle)
+    objHandle  = 0
+    conHandle  = 0
+    stopHandle = 0
+
+    call deallocI(state)
+
+    call deallocR(bl)
+    call deallocR(bu)
+    call deallocR(x)
+    call deallocR(y)
+
+    call deallocR2(A)
+    call deallocR2(Jcon)
+
+    call deallocR2(H)
+    call deallocR(fCon)
+    call deallocR(gObj)
+
+  end subroutine deallocDNOPT
+
+end module mxNLP
+
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+module mxQP
+  use mxdnWork
+  implicit none
+  public
+
+  ! DQOPT arrays
+  integer,          allocatable :: state(:), Etype(:)
+  double precision, allocatable :: x(:), bl(:), bu(:), y(:), &
+                                   H(:,:), A(:,:), cObj(:)
+
+contains
+
+  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  subroutine resetDQOPT
+    !---------------------------------------------------------------------------
+    ! resetDQOPT for new problem.
+    ! (Also registered with mexAtExit to deallocate workspace and close files)
+    !---------------------------------------------------------------------------
+    call resetWork
+    call deallocDQOPT
+
+  end subroutine resetDQOPT
+
+  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  subroutine allocDQOPT(n, m, nnH, ncObj)
+    integer, intent(in) :: n, m, nnH, ncObj
+    !---------------------------------------------------------------------------
+    ! Allocate space for DQOPT solve.
+    !---------------------------------------------------------------------------
+
+    call deallocDQOPT
+
+    allocate(state(n+m),Etype(n+m))
+    allocate(bl(n+m), bu(n+m), x(n+m), y(n+m))
+
+    if (nnH > 0) then
+       allocate(H(nnH,nnH))
+    else
+       allocate(H(1,1))
+    end if
+
+    if (ncObj > 0) then
+       allocate(cObj(ncObj))
+    else
+       allocate(cObj(1))
+    end if
+
+    if (m > 0) then
+       allocate(A(m,n))
+    else
+       allocate(A(1,n))
+    end if
+
+  end subroutine allocDQOPT
+
+  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  subroutine deallocDQOPT
+    !---------------------------------------------------------------------------
+    ! Deallocate arrays involved in solve routine.
+    !---------------------------------------------------------------------------
+
+    if (stopHandle /= 0) call mxDestroyArray(stopHandle)
+    stopHandle = 0
+
+    call deallocI(state)
+    call deallocI(Etype)
+
+    call deallocR(x)
+    call deallocR(y)
+    call deallocR(bl)
+    call deallocR(bu)
+    call deallocR(cObj)
+
+    call deallocR2(H)
+    call deallocR2(A)
+
+  end subroutine deallocDQOPT
+
+  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+end module mxQP
+
