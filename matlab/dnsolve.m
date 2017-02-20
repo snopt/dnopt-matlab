@@ -113,15 +113,6 @@ if nargin == 5 || nargin == 7 || nargin == 9 || nargin == 10,
       probName = options.name;
     end
 
-    % Start
-    if isfield(options,'start'),
-      if strcmp(lower(options.start),'warm'),
-	istart = 2;
-      elseif strcmp(lower(options.start),'hot'),
-	istart = 3;
-      end
-    end
-
     % Stop function
     if isfield(options,'stop'),
       if ischar(options.stop),
@@ -143,7 +134,7 @@ linear_ineq = size(A,1);
 linear_eq   = 0;
 nonlin_ineq = 0;
 nonlin_eq   = 0;
-
+H = [];
 
 if nargin == 4 || nargin == 5,
   % dnsolve(obj, x0, A, b)
@@ -154,7 +145,7 @@ if nargin == 4 || nargin == 5,
   end
 
   [x,fval,exitFlag,itn,nEval,y,istate] = dnoptmex(solveOpt, istart, stopFun, probName, ...
-						  objFun, x0, [], [], [], [],...
+						  objFun, H, x0, [], [], [], [],...
 						  A, [], b, [], []);
 
 elseif nargin == 6 || nargin == 7,
@@ -174,7 +165,7 @@ elseif nargin == 6 || nargin == 7,
   al = [ -inf*ones(ineq,1); beq ];
   au = [                 b; beq ];
   [x,fval,exitFlag,itn,nEval,y,istate] = dnoptmex(solveOpt, istart, stopFun, probName, ...
-						  objFun, x0, [], [], [], [], ...
+						  objFun, H, x0, [], [], [], [], ...
 						  AA, al, au, [], []);
 
 elseif nargin == 8 || (nargin == 9 && optionsLoc ~= 0),
@@ -196,7 +187,7 @@ elseif nargin == 8 || (nargin == 9 && optionsLoc ~= 0),
   au = [                        b; beq ];
 
   [x,fval,exitFlag,itn,nEval,y,istate] = dnoptmex(solveOpt, istart, stopFun, probName, ...
-						  objFun, x0, lb, ub, [], [], ...
+						  objFun, H, x0, lb, ub, [], [], ...
 						  AA, al, au, [], []);
 
 elseif nargin == 9 || nargin == 10,
@@ -245,7 +236,7 @@ elseif nargin == 9 || nargin == 10,
   cu = [     zeros(nonlin_ineq,1); zeros(nonlin_eq,1)];
 
   [x,fval,exitFlag,itn,nEval,y,istate] = dnoptmex(solveOpt, istart, stopFun, probName, ...
-						  objFun, x0, lb, ub, [], [], ...
+						  objFun, H, x0, lb, ub, [], [], ...
 						  AA, al, au, [], [], ...
 						  @(x)dnsolveCon(x,nonlcon), ...
 						  cl, cu, [], [], JJ);
@@ -255,10 +246,10 @@ else
 end
 
 % Set output
-zero              = zeros(n);
+zero              = zeros(n,1);
 
-lambda.lb         = max(y(1:n),zero);
-lambda.ub         = min(y(1:n),zero);
+lambda.lower      = max(y(1:n),zero);
+lambda.upper      = min(y(1:n),zero);
 
 if nonlin_ineq > 0,
   i1 = n+1; i2 = i1-1 + nonlin_ineq;

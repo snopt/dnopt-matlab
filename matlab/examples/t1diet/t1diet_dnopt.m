@@ -46,12 +46,12 @@ au = [ Inf; Inf; Inf];
 % Solve the problem.
 options.name  = 't1diet';
 options.start = 'Cold';
-[x,obj,INFO, output, lambda, states] = dnopt(@t1dietobj, x, xl, ...
-					     xu, A, al, au, options);
+[x,obj,INFO, output, lambda, states, H] = dnopt(@t1dietobj, x, xl, ...
+						xu, A, al, au, options);
 
 options.start = 'Warm';
-[x,obj,INFO] = dnopt(@t1dietobj, x, xl, xu, A, al, au, states, ...
-		     lambda, options);
+[x,obj,INFO] = dnopt(@t1dietobj, x, xl, xu, A, al, au, ...
+		     lambda, states, H, options);
 
 dnprint('off');
 dnscreen('off');

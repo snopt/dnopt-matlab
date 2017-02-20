@@ -1,6 +1,6 @@
-function [x,fval,exitFlag,output,lambda,states] = ...
+function [x,fval,exitFlag,output,lambda,states,H] = ...
     dnopt(obj, x0, xl, xu, varargin)
-% function [x,fval,exitFlag,output,lambda] = dnopt(obj,x0,xl,xu,varargin)
+% function [x,fval,exitFlag,output,lambda,states,H] = dnopt(obj,x0,xl,xu,varargin)
 %
 %   Solve the given nonlinear problem:
 %       minimize          f(x)
@@ -8,30 +8,27 @@ function [x,fval,exitFlag,output,lambda,states] = ...
 %                  cl  <= c(x) <= cu
 %                  al  <= A*x  <= au
 %
-%  Calling sequences:
-%  [] = dnopt(obj, x, xl, xu )
-%  [] = dnopt(obj, x, xl, xu, options )
+%  [] = dnopt(obj, x, xl, xu)
+%  [] = dnopt(obj, x, xl, xu, options)
 %
-%  [] = dnopt(obj, x, xl, xu, states, lambda )
-%  [] = dnopt(obj, x, xl, xu, states, lambda, options)
+%  [] = dnopt(obj, x, xl, xu, lambda, states, H)
+%  [] = dnopt(obj, x, xl, xu, lambda, states, H, options)
 %
 %  [] = dnopt(obj, x, xl, xu, A, al, au)
 %  [] = dnopt(obj, x, xl, xu, A, al, au, options)
 %
-%  [] = dnopt(obj, x, xl, xu, A, al, au, states, lambda)
-%  [] = dnopt(obj, x, xl, xu, A, al, au, states, lambda, options)
+%  [] = dnopt(obj, x, xl, xu, A, al, au, lambda, states, H)
+%  [] = dnopt(obj, x, xl, xu, A, al, au, lambda, states, H, options)
 %
 %  [] = dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu)
 %  [] = dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, options)
 %
-%  [] = dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, states, lambda)
-%  [] = dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, states, lambda, options)
+%  [] = dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, lambda, states, H)
+%  [] = dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, lambda, states, H, options)
 %
 %
-%  [x,fval,exitFlag]                      = dnopt(...)
-%  [x,fval,exitFlag,output]               = dnopt(...)
-%  [x,fval,exitFlag,output,lambda]        = dnopt(...)
-%  [x,fval,exitFlag,output,lambda,states] = dnopt(...)
+%  [x,fval,exitFlag,output,lambda,states,H] = dnopt(...)
+%
 %
 %   INPUT:
 %     obj      is the Matlab function that evaluates the objective function
@@ -65,6 +62,11 @@ function [x,fval,exitFlag,output,lambda,states] = ...
 %              states and multipliers for the variables, nonlinear and
 %              linear constraints.
 %
+%     H        is the Hessian of the Lagrangian at x and lambda.
+%              H is only required when performing a WARM start and
+%              (generally) should be the Hessian from the previous run.
+%              Otherwise, an empty array [] would be acceptable input.
+%
 %     options  is a struct.
 %              options.name   is the problem name
 %              options.stop   is the "dnSTOP" function called at every
@@ -92,6 +94,9 @@ function [x,fval,exitFlag,output,lambda,states] = ...
 %              states.nonlin
 %              states.linear
 %
+%     H        is the Hessian of the Lagrangian at the final point x and
+%              the multipliers lambda. (Needed for WARM starts).
+%
 %
 solveOpt   = 1;
 
@@ -118,8 +123,7 @@ end
 
 
 % Deal with options first.
-if nargin == 5 || nargin == 7 || nargin == 8 || nargin == 10 || ...
-	   nargin == 11 || nargin == 13,
+if nargin == 5 || nargin == 8 || nargin == 11 || nargin == 14,
   optionsLoc = nargin - 4;
   if isstruct(varargin{optionsLoc}),
     options = varargin{optionsLoc};
@@ -158,25 +162,29 @@ n     = size(x0,1);
 nlCon = 0;
 nnCon = 0;
 
+
 if nargin == 4 || nargin == 5,
-  % dnopt(obj, x, xl, xu )
-  % dnopt(obj, x, xl, xu, options )
+  % dnopt(obj, x, xl, xu)
+  % dnopt(obj, x, xl, xu, options)
 
   xstate = []; xmul = [];
+  H      = [];
 
   if setDer,
     dnset(['Derivative level ' num2str(lvlDer)]);
   end
 
-  [x,fval,exitFlag,itn,nEval,y,istate] = dnoptmex(solveOpt, istart, stopFun, probName, ...
-						  objFun, x0, xl, xu, xstate, xmul);
+  [x,fval,exitFlag,itn,nEval,y,istate,H] = dnoptmex(solveOpt, istart, stopFun, probName, ...
+						    objFun, H, x0, xl, xu, xstate, xmul);
 
-elseif nargin == 6 || (nargin == 7 && optionsLoc ~= 0),
-  % dnopt(obj, x, xl, xu, states, lambda )
-  % dnopt(obj, x, xl, xu, states, lambda, options)
+elseif (nargin == 7 && isstruct(varargin{1})) || ...
+      (nargin == 8 && isstruct(varargin{1}) &&optionsLoc ~= 0),
+  % dnopt(obj, x, xl, xu, lambda, states, H)
+  % dnopt(obj, x, xl, xu, lambda, states, H, options)
 
-  states = varargin{1};
-  lambda = varargin{2};
+  lambda = varargin{1};
+  states = varargin{2};
+  H      = varargin{3};
   xstate = []; xmul = [];
 
   if isfield(states,'x'),
@@ -191,8 +199,8 @@ elseif nargin == 6 || (nargin == 7 && optionsLoc ~= 0),
     dnset(['Derivative level ' num2str(lvlDer)]);
   end
 
-  [x,fval,exitFlag,itn,nEval,y,istate] = dnoptmex(solveOpt, istart, stopFun, probName, ...
-						  objFun, x0, xl, xu, xstate, xmul);
+  [x,fval,exitFlag,itn,nEval,y,istate,H] = dnoptmex(solveOpt, istart, stopFun, probName, ...
+						    objFun, H, x0, xl, xu, xstate, xmul);
 
 elseif nargin == 7 || nargin == 8,
   % dnopt(obj, x, xl, xu, A, al, au)
@@ -203,25 +211,29 @@ elseif nargin == 7 || nargin == 8,
   au     = varargin{3};
   xstate = []; xmul = [];
   astate = []; amul = [];
+  H      = [];
+
   nlCon  = size(A,1);
 
   if setDer,
     dnset(['Derivative level ' num2str(lvlDer)]);
   end
 
-  [x,fval,exitFlag,itn,nEval,y,istate] = dnoptmex(solveOpt, istart, stopFun, probName, ...
-						  objFun, x0, xl, xu, xstate, xmul,...
-						  A, al, au, astate, amul);
+  [x,fval,exitFlag,itn,nEval,y,istate,H] = dnoptmex(solveOpt, istart, stopFun, probName, ...
+						    objFun, H, x0, xl, xu, xstate, xmul,...
+						    A, al, au, astate, amul);
 
-elseif nargin == 9 || (nargin == 10 && optionsLoc ~= 0),
-  % dnopt(obj, x, xl, xu, A, al, au, states, lambda)
-  % dnopt(obj, x, xl, xu, A, al, au, states, lambda, options)
+elseif (nargin == 10 && isstruct(varargin{4})) || ...
+      (nargin == 11 && isstruct(varargin{4}) && optionsLoc ~= 0),
+  % dnopt(obj, x, xl, xu, A, al, au, lambda, states, H)
+  % dnopt(obj, x, xl, xu, A, al, au, lambda, states, H, options)
 
   A      = varargin{1};
   al     = varargin{2};
   au     = varargin{3};
-  states = varargin{4};
-  lambda = varargin{5};
+  lambda = varargin{4};
+  states = varargin{5};
+  H      = varargin{6};
   nlCon  = size(A,1);
 
   xstate = []; xmul = [];
@@ -247,13 +259,14 @@ elseif nargin == 9 || (nargin == 10 && optionsLoc ~= 0),
     dnset(['Derivative level ' num2str(lvlDer)]);
   end
 
-  [x,fval,exitFlag,itn,nEval,y,istate] = dnoptmex(solveOpt, istart, stopFun, probName, ...
-						  objFun, x0, xl, xu, xstate, xmul,...
-						  A, al, au, astate, amul);
+  [x,fval,exitFlag,itn,nEval,y,istate,H] = dnoptmex(solveOpt, istart, stopFun, probName, ...
+						    objFun, H, x0, xl, xu, xstate, xmul,...
+						    A, al, au, astate, amul);
 
 elseif nargin == 10 || nargin == 11,
   % dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu)
   % dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, options)
+
 
   A      = varargin{1};
   al     = varargin{2};
@@ -266,6 +279,7 @@ elseif nargin == 10 || nargin == 11,
   xstate = []; xmul   = [];
   astate = []; amul   = [];
   cstate = []; cmul   = [];
+  H = [];
 
   % Check nonlcon
   [nonlcon,c,J,nnCon,lvlDer] = checkCon(nonlc,x0,lvlDer,n);
@@ -274,15 +288,15 @@ elseif nargin == 10 || nargin == 11,
     dnset(['Derivative level ' num2str(lvlDer)]);
   end
 
-  [x,fval,exitFlag,itn,nEval,y,istate] = dnoptmex(solveOpt, istart, stopFun, probName, ...
-						  objFun, x0, xl, xu, xstate, xmul,...
-						  A, al, au, astate, amul, ...
-						  nonlcon, cl, cu, cstate, ...
-						  cmul, J);
+  [x,fval,exitFlag,itn,nEval,y,istate,H] = dnoptmex(solveOpt, istart, stopFun, probName, ...
+						    objFun, H, x0, xl, xu, xstate, xmul,...
+						    A, al, au, astate, amul, ...
+						    nonlcon, cl, cu, cstate, ...
+						    cmul, J);
 
-elseif nargin == 12 || nargin == 13,
-  % dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, states, lambda)
-  % dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, states, lambda, options)
+elseif nargin == 13 || nargin == 14,
+  % dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, lambda, states, H)
+  % dnopt(obj, x, xl, xu, A, al, au, nonlcon, cl, cu, lambda, states, H, options)
 
   A      = varargin{1};
   al     = varargin{2};
@@ -290,8 +304,9 @@ elseif nargin == 12 || nargin == 13,
   nonlc  = varargin{4};
   cl     = varargin{5};
   cu     = varargin{6};
-  states = varargin{7};
-  lambda = varargin{8};
+  lambda = varargin{7};
+  states = varargin{8};
+  H      = varargin{9};
   nlCon  = size(A,1);
 
   xstate = []; xmul   = [];
@@ -329,11 +344,11 @@ elseif nargin == 12 || nargin == 13,
     dnset(['Derivative level ' num2str(lvlDer)]);
   end
 
-  [x,fval,exitFlag,itn,nEval,y,istate] = dnoptmex(solveOpt, istart, stopFun, probName, ...
-						  objFun, x0, xl, xu, xstate, xmul,...
-						  A, al, au, astate, amul, ...
-						  nonlcon, cl, cu, cstate, ...
-						  cmul, J);
+  [x,fval,exitFlag,itn,nEval,y,istate,H] = dnoptmex(solveOpt, istart, stopFun, probName, ...
+						    objFun, H, x0, xl, xu, xstate, xmul,...
+						    A, al, au, astate, amul, ...
+						    nonlcon, cl, cu, cstate, ...
+						    cmul, J);
 
 else
   error('DNOPT:InputArgs','Wrong number of input arguments for DNOPT');
@@ -341,7 +356,6 @@ end
 
 
 % Set output
-zero              = zeros(n);
 states.x          = istate(1:n);
 lambda.x          = y(1:n);
 
@@ -363,7 +377,6 @@ end
 
 output.iterations = itn;
 output.funcCount  = nEval;
-
 
 
 function [nonlcon,c,J,nnCon,lvlDer] = checkCon(nonlc,x0,lvlDer,n)

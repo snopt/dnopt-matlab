@@ -94,13 +94,13 @@ cu =      ones(nC,1);
 
 % Solve the problem.
 options.name = 'dnmain';
-[x,F,INFO,output,lambda,states] = dnopt('dnmainobj', x, xlow, xupp, A, al, au, ...
+[x,F,INFO,output,lambda,states,H] = dnopt('dnmainobj', x, xlow, xupp, A, al, au, ...
 					@dnmaincon, cl, cu, options);
 
 % Do a warm start and input the solution:
 options.start = 'Warm';
 [x,F,INFO] = dnopt('dnmainobj', x, xlow, xupp, A, al, au, ...
-		   @dnmaincon, cl, cu, states, lambda, options);
+		   @dnmaincon, cl, cu, lambda, states, H, options);
 
 dnprint('off');
 dnscreen('off');

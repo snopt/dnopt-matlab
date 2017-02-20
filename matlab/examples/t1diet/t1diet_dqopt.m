@@ -51,8 +51,7 @@ options.start = 'Cold';
 [x,obj,INFO,output,lambda,states] = dqopt([], c, x, xl, xu, A, al, [], options);
 
 options.start = 'Warm';
-[x,obj,INFO] = dqopt([], c, x, xl, xu, A, al, [], states, ...
-		     lambda, options);
+[x,obj,INFO] = dqopt([], c, x, xl, xu, A, al, [], lambda, states, options);
 
 dqprint('off');
 dqscreen('off');
