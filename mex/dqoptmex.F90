@@ -209,37 +209,23 @@ subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
   integer*4        :: mxIsChar, mxIsClass
   double precision :: mxGetScalar
 
+  ! DQOPT
   character*8      :: probName, Names(1)
   integer          :: Errors, i1, i2, info, j
   integer          :: Start, iObj, ldA, ldH, m, &
                       mincw, miniw, minrw, n, nb, ncObj, nInf, &
                       nleq, nlin, nNames, nnH
-  double precision :: rtmp, Obj, ObjAdd, sInf
+  double precision :: Obj, ObjAdd, sInf
   external         :: dqoptKernel, dqSetInt, dqLog, matlabHx
 
-  integer,          parameter   :: nItn   = 421, izero = 0
+  integer,          parameter   :: nItn = 421
+  integer,          parameter   :: izero = 0
   double precision, parameter   :: zero = 0.0d+0, infBnd = 1.0d+20
 
 
   ! Check number of input and output arguments.
   if (nrhs /= 15) &
        call mexErrMsgIdAndTxt('DQOPT:InputArgs','Wrong number of input arguments')
-
-
-  !-----------------------------------------------------------------------------
-  ! Start option
-  !-----------------------------------------------------------------------------
-  start = mxGetScalar(prhs(2))
-
-
-  !-----------------------------------------------------------------------------
-  ! Problem name
-  !-----------------------------------------------------------------------------
-  if (mxIsChar(prhs(3)) /= 1) &
-       call mexErrMsgIdAndTxt('DQOPT:InputArg','Wrong input type for problem name')
-  probName = '        '
-  dimx = min(8,mxGetN(prhs(3)))
-  call mxGetString(prhs(3), probName, dimx)
 
 
   !-----------------------------------------------------------------------------
@@ -254,6 +240,25 @@ subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
   if (n == 0) call mexErrMsgIdAndTxt('DQOPT:InputArgs','No objective given')
 
   call allocDQOPT(n, m, nnH, ncObj)
+
+
+  !-----------------------------------------------------------------------------
+  ! Start option
+  !-----------------------------------------------------------------------------
+  start = int(mxGetScalar(prhs(2)))
+
+
+  !-----------------------------------------------------------------------------
+  ! Problem name
+  !-----------------------------------------------------------------------------
+  probName = ''
+  if (mxIsChar(prhs(3)) /= 1) &
+       call mexErrMsgIdAndTxt('DQOPT:InputArg','Wrong input type for problem name')
+
+  if (mxGetN(prhs(3)) > 0) then
+     dimx = min(8,mxGetN(prhs(3)))
+     call mxGetString(prhs(3), probName, dimx)
+  end if
 
 
   !-----------------------------------------------------------------------------
@@ -318,15 +323,15 @@ subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
   ObjAdd = zero
   Etype(1:n+m) = izero
 
-100 call dqoptKernel                         &
-         (start, m, n, nb, nnH, nNames, ldH, &
-          ncObj, iObj, objAdd, probName,     &
-          A, ldA, bl, bu, cObj, H, Names,    &
-          matlabHx, dqLog,                   &
-          Etype, state, x, y,                &
-          INFO, mincw, miniw, minrw,         &
-          Obj, nInf, sInf,                   &
-          cw, lencw, iw, leniw, rw, lenrw,   &
+100 call dqoptKernel                           &
+         (start, m, n, nb, nnH, nNames, ldH,   &
+          ncObj, iObj, objAdd, trim(probName), &
+          A, ldA, bl, bu, cObj, H, Names,      &
+          matlabHx, dqLog,                     &
+          Etype, state, x, y,                  &
+          INFO, mincw, miniw, minrw,           &
+          Obj, nInf, sInf,                     &
+          cw, lencw, iw, leniw, rw, lenrw,     &
           cw, lencw, iw, leniw, rw, lenrw)
 
   if (INFO == 83) then
@@ -370,12 +375,10 @@ subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
   if (nlhs > 1) plhs(2) = mxCreateDoubleScalar(Obj)
 
   ! Exit flag
-  rtmp = info
-  if (nlhs > 2) plhs(3) = mxCreateDoubleScalar(rtmp)
+  if (nlhs > 2) plhs(3) = mxCreateDoubleScalar(dble(info))
 
   ! Iterations
-  rtmp = iw(nItn)
-  if (nlhs > 3) plhs(4) = mxCreateDoubleScalar(rtmp)
+  if (nlhs > 3) plhs(4) = mxCreateDoubleScalar(dble(iw(nItn)))
 
   ! Multipliers
   if (nlhs > 4) then
