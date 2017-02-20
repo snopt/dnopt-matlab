@@ -43,7 +43,6 @@ function [x,fval,exitFlag,output,lambda] = dqsolve(H, f, varargin)
 %
 %     options  is a struct.
 %              options.name   is the problem name
-%              options.start  'Cold', 'Warm'
 %
 %
 %   OUTPUT:
@@ -125,21 +124,12 @@ elseif nargin == 10,
   x0  = varargin{7};
 
   % Deal with options.
-  optionsLoc = 10;
+  optionsLoc = 8;
   if isstruct(varargin{optionsLoc}),
     options = varargin{optionsLoc};
     % Name
     if isfield(options,'name'),
       probName = options.name;
-    end
-
-    % Start
-    if isfield(options,'start'),
-      if strcmp(lower(options.start),'warm'),
-	istart = 2;
-      elseif strcmp(lower(options.start),'hot'),
-	istart = 3;
-      end
     end
 
   else
@@ -164,7 +154,6 @@ output.iterations = itn;
 
 m    = size(AA,1);
 n    = size(x0,1);
-zero = zeros(n);
 
 states.x      = state(1:n);
 lambda.x      = y(1:n);
@@ -173,7 +162,9 @@ if m > 0,
   lambda.linear = y(n+1:n+m);
 end
 
-lambda.lb         = max(y(1:n),zero);
-lambda.ub         = min(y(1:n),zero);
-lambda.ineqlin    = y(1+n:ineq+n);
-lambda.eqlin      = y(1+ineq+n:n+m);
+zero = zeros(n,1);
+
+lambda.lower    = max(y(1:n),zero);
+lambda.upper    = min(y(1:n),zero);
+lambda.ineqlin  = y(1+n:ineq+n);
+lambda.eqlin    = y(1+ineq+n:n+m);

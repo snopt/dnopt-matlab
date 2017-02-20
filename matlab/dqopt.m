@@ -198,7 +198,7 @@ output.iterations = itn;
 
 m    = size(A,1);
 n    = size(x,1);
-zero = zeros(n);
+zero = zeros(n,1);
 
 states.x = state(1:n);
 lambda.x = y(1:n);
