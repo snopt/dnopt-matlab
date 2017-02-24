@@ -297,7 +297,6 @@ subroutine dnmxSolve(nlhs, plhs, nrhs, prhs)
      call mxGetString(prhs(4), probName, dimx)
   end if
 
-
   !-----------------------------------------------------------------------------
   ! Objective function
   !-----------------------------------------------------------------------------
@@ -452,7 +451,7 @@ subroutine dnmxSolve(nlhs, plhs, nrhs, prhs)
   call dnoptKernel                           &
        (start, 'DNOPT   ',                   &
         n, nb, nlCon, nnCon, nnJac, nnObj,   &
-        trim(probName), Names, nNames,       &
+        probName, Names, nNames,             &
         matlabCon, matlabObj,                &
         matlabObj, dnfunHxNull,              &
         dnoptInterfaceB,                     &

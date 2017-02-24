@@ -179,9 +179,8 @@ subroutine iomexwriteScreen ( newline, buffer, length )
   if ( length > 140 ) &
        call mexErrMsgTxt ( 'Print buffer too long for ioPRNT' )
 
-  call mexPrintf ( buffer(1:length)//achar(10) )
-
   if ( newline > 0 ) call mexPrintf ( achar(10) )
+  call mexPrintf ( buffer(1:length)//achar(10) )
 
 end subroutine iomexwriteScreen
 

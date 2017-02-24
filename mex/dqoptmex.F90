@@ -251,7 +251,6 @@ subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
   !-----------------------------------------------------------------------------
   ! Problem name
   !-----------------------------------------------------------------------------
-  probName = ''
   if (mxIsChar(prhs(3)) /= 1) &
        call mexErrMsgIdAndTxt('DQOPT:InputArg','Wrong input type for problem name')
 
@@ -259,7 +258,6 @@ subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
      dimx = min(8,mxGetN(prhs(3)))
      call mxGetString(prhs(3), probName, dimx)
   end if
-
 
   !-----------------------------------------------------------------------------
   ! Set Hessian and linear objective term
@@ -323,15 +321,15 @@ subroutine dqmxSolve(nlhs, plhs, nrhs, prhs)
   ObjAdd = zero
   Etype(1:n+m) = izero
 
-100 call dqoptKernel                           &
-         (start, m, n, nb, nnH, nNames, ldH,   &
-          ncObj, iObj, objAdd, trim(probName), &
-          A, ldA, bl, bu, cObj, H, Names,      &
-          matlabHx, dqLog,                     &
-          Etype, state, x, y,                  &
-          INFO, mincw, miniw, minrw,           &
-          Obj, nInf, sInf,                     &
-          cw, lencw, iw, leniw, rw, lenrw,     &
+100 call dqoptKernel                         &
+         (start, m, n, nb, nnH, nNames, ldH, &
+          ncObj, iObj, objAdd, probName,     &
+          A, ldA, bl, bu, cObj, H, Names,    &
+          matlabHx, dqLog,                   &
+          Etype, state, x, y,                &
+          INFO, mincw, miniw, minrw,         &
+          Obj, nInf, sInf,                   &
+          cw, lencw, iw, leniw, rw, lenrw,   &
           cw, lencw, iw, leniw, rw, lenrw)
 
   if (INFO == 83) then
